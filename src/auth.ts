@@ -1,7 +1,7 @@
 import authConfig from "./auth.config";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import NextAuth from "next-auth";
-import { db } from "./db/prisma_client";
+import { db } from "./db/db";
 
 export const {
   handlers: { GET, POST },
@@ -10,8 +10,9 @@ export const {
   signOut,
 } = NextAuth({
   pages: {
-    signIn: "/about",
+    signIn: "/signin?type=login",
   },
+
   events: {
     async linkAccount({ user }) {
       ///called if new account created through OAUTH
@@ -22,18 +23,13 @@ export const {
     },
   },
   callbacks: {
-    async signIn({ user }) {
-      return true;
-    },
-    async jwt({ token, user }) {
-      if (user) {
-        token.role = (user as any).role;
-      }
+    async jwt({ token }) {
       return token;
     },
 
     async session({ token, session }) {
-      session.user = { name: token, role: token.role } as any;
+      if (token.sub) session.user.id = token.sub;
+
       return session;
     },
   },

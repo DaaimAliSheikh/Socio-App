@@ -4,6 +4,10 @@ import { Inter } from "next/font/google";
 import { ThemeProvider } from "@/components/theme-provider";
 import Container from "@/components/Container";
 import Navbar from "@/components/Navbar";
+import { auth } from "@/auth";
+import { Session } from "next-auth";
+import React from "react";
+import getUserById from "@/lib/getUserById";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -11,7 +15,7 @@ const inter = Inter({
   variable: "--global-font",
 });
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
@@ -30,7 +34,7 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <Navbar/>
+          <Navbar />
           <Container>{children}</Container>
         </ThemeProvider>
       </body>

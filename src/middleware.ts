@@ -2,9 +2,7 @@ import { NextResponse } from "next/server";
 import authConfig from "./auth.config";
 import NextAuth from "next-auth";
 
-const authRoutes = ["/signin", "/profile"];
-const publicRoutes: string[] = [];
-const redirectUrl = "/";
+import { publicRoutes, signInRedirectUrl, authRoutes } from "./routes";
 
 const { auth } = NextAuth(authConfig);
 export default auth((req) => {
@@ -17,7 +15,8 @@ export default auth((req) => {
   if (isApiAuth) return; //return passes control
 
   if (isAuth) {
-    if (isLoggedIn) return NextResponse.redirect(new URL(redirectUrl, nextUrl));
+    if (isLoggedIn)
+      return NextResponse.redirect(new URL(signInRedirectUrl, nextUrl));
     return;
   }
 

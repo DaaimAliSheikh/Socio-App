@@ -1,12 +1,12 @@
 import React from "react";
 
-const page = () => {
+const ProfilePage = () => {
   return (
     <>
       <div >page</div>
-      <div className="text-primary-foreground">page</div>
+      <div className="text-secondary">page</div>
     </>
   );
 };
 
-export default page;
+export default ProfilePage;

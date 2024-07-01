@@ -47,7 +47,7 @@ model Account {
 
 model VerifyToken {
   id    String @id @default(cuid())
-  email String @unique
+  email String 
   token String @unique
 
   @@unique([email, token])

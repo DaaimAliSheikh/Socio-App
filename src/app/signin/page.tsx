@@ -1,3 +1,4 @@
+import AuthForm from "@/components/AuthForm";
 import React from "react";
 
 export const dynamic = "force-dynamic";
@@ -5,8 +6,7 @@ export const dynamic = "force-dynamic";
 const Signin = () => {
   return (
     <>
-      <div className="  sticky  top-0 ">hello
-      </div>
+      <AuthForm />
     </>
   );
 };

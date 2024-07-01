@@ -1,16 +1,8 @@
-import { FC } from "react";
-import { Button } from "@/components/ui/button";
-import { FaGooglePlus } from "react-icons/fa6";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import Image from "next/image";
-import Link from "next/link";
-interface appProps {}
+import { auth } from "@/auth";
 
-const app: FC<appProps> = ({}) => {
-  return <div>
-
-  
-  </div>;
+const HomePage = async () => {
+  const session = await auth();
+  return <div>{JSON.stringify(session?.user)}</div>;
 };
 
-export default app;
+export default HomePage;

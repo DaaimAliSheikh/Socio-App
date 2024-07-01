@@ -1,27 +1,32 @@
 import Credentials from "next-auth/providers/credentials";
 import type { NextAuthConfig } from "next-auth";
-import { db } from "./db/prisma_client";
 import GoogleProvider from "next-auth/providers/google";
-import GitHubProvider from "next-auth/providers/github";
+import { LoginFormSchema } from "./lib/LoginFormSchema";
+import bcrypt from "bcryptjs";
+import getUserByEmail from "./lib/getUserByEmail";
 export default {
   providers: [
-    GitHubProvider({
-      clientId: process.env.GITHUB_CLIENT_ID,
-      clientSecret: process.env.GITHUB_CLIENT_SECRET,
-    }),
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
     }),
     Credentials({
       async authorize(credentials) {
+        const { email, password } = credentials;
+        const result = LoginFormSchema.safeParse({ email, password });
 
-        const { name, password } = credentials;
-        const user = await db.user.findFirst({
-          where: { name: name as string, password: password as string },
-        });
+        if (result.success) {
+          const user = await getUserByEmail(email as string);
+          if (
+            !user ||
+            !user?.password ||
+            !(await bcrypt.compare(result.data.password, user?.password)) ||
+            !user?.emailVerified
+          )
+            return null;
+          return user;
+        }
 
-        if (user) return user;
         return null;
       },
     }),
