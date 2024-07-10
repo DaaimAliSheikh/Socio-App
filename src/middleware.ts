@@ -21,7 +21,7 @@ export default auth((req) => {
   }
 
   if (!isLoggedIn && !isPublic)
-    return NextResponse.redirect(new URL("/signin?type=login", nextUrl));
+    return NextResponse.redirect(new URL("/signin", nextUrl));
 
   return; // all ok
 });

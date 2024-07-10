@@ -4,7 +4,7 @@ import { Suspense } from "react";
 const EmailVerificationPage = () => {
   return (
     <Suspense>
-      <EmailVerificationCard />;
+      <EmailVerificationCard />
     </Suspense>
   );
 };

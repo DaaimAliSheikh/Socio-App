@@ -1,9 +1,6 @@
 "use client";
-import React, { useCallback, useRef, useState } from "react";
-import { Card, CardContent, CardFooter } from "@/components/ui/card";
-
-import { FcGoogle } from "react-icons/fc";
-import { signIn } from "next-auth/react";
+import React, { useCallback, useEffect, useState } from "react";
+import { Card, CardContent } from "@/components/ui/card";
 
 import {
   Form,
@@ -19,19 +16,29 @@ import { RegisterFormSchema, RegisterFormType } from "@/lib/RegisterFormSchema";
 import { useForm } from "react-hook-form";
 import { Separator } from "./ui/separator";
 import { Button } from "./ui/button";
-import { signInRedirectUrl } from "@/routes";
 import { registerAction } from "@/actions/auth_actions";
 import ErrorAlert from "./ErrorAlert";
 import SuccessAlert from "./SuccessAlert";
-import { useRouter } from "next/navigation";
 import { LoaderCircle } from "lucide-react";
+import { useSearchParams } from "next/navigation";
+import OAuthForm from "./OAuthForm";
 
 const RegisterForm = () => {
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
-  const router = useRouter();
+  const params = useSearchParams();
+
+  useEffect(() => {
+    if (params) {
+      if (params.get("error") === "OAuthAccountNotLinked") {
+        setSuccessMsg(null);
+        setErrorMsg("Email already registered with a different provider");
+      }
+    }
+  }, [params]);
 
   const form = useForm<RegisterFormType>({
+    shouldUnregister: false,
     resolver: zodResolver(RegisterFormSchema),
     defaultValues: {
       username: "",
@@ -117,28 +124,10 @@ const RegisterForm = () => {
               <p className="text-muted-foreground">or</p>
               <Separator className="w-[45%] ml-2" />
             </div>
-
-            <Button
-              onClick={(e) =>
-                signIn("google", { callbackUrl: signInRedirectUrl })
-              }
-              variant={"secondary"}
-              type="button"
-            >
-              <FcGoogle className=" text-2xl mr-2 " />
-              <p>Sign in with Google</p>
-            </Button>
           </form>
         </Form>
+        <OAuthForm />
       </CardContent>
-      <CardFooter>
-        <a
-          href="/signin?type=login"
-          className=" mx-auto text-muted-foreground hover:underline"
-        >
-          Already have and account?
-        </a>
-      </CardFooter>
     </Card>
   );
 };

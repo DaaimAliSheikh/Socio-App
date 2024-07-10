@@ -16,17 +16,16 @@ const Underline = (
 );
 
 const AuthForm = () => {
-  const params = useSearchParams();
+ 
+
+
   return (
     <div className="flex flex-col items-center   ">
       {Underline}
 
-      <Tabs
-        defaultValue={params.get("type") || "login"}
-        className="w-[80%] max-w-[30rem] mt-4 mb-4"
-      >
+      <Tabs defaultValue={"login"} className="w-full max-w-[30rem] mt-4 mb-4">
         <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger className="" value="register">
+          <TabsTrigger value="register">
             Register
           </TabsTrigger>
           <TabsTrigger value="login">Login</TabsTrigger>

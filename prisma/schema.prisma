@@ -13,14 +13,36 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum RelationType {
+  FRIEND
+  BLOCKED
+}
+
+enum NotificationType {
+  RECEIVED_FRIEND_REQUEST
+  LIKED_POST
+  LIKED_COMMENT
+  COMMENTED_ON_POST
+}
+
 model User {
-  id            String    @id @default(cuid())
+  id            String          @id @default(cuid())
   name          String?
-  email         String?   @unique
-  emailVerified DateTime? @map("email_verified")
+  email         String?         @unique
+  emailVerified DateTime?       @map("email_verified")
   image         String?
+  coverImage    String?
   password      String?
+  posts         Post[]
   accounts      Account[]
+  Comments      Comment[]
+  relationA     Relation[]      @relation("userA")
+  relationB     Relation[]      @relation("userB")
+  sender        FriendRequest[] @relation("sender")
+  receiver      FriendRequest[] @relation("receiver")
+  owner         Notification[]  @relation("owner")
+  associate     Notification[]  @relation("associate")
+  story         Story[]
 
   @@map("users")
 }
@@ -47,8 +69,75 @@ model Account {
 
 model VerifyToken {
   id    String @id @default(cuid())
-  email String 
+  email String
   token String @unique
 
   @@unique([email, token])
+}
+
+model Post {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  edited    Boolean  @default(false)
+  author    User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  authorId    String
+  title       String
+  description String
+  imagePath   String?
+  likes       Int
+  comments    Comment[]
+}
+
+model Story {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  User      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+  imagePath String
+  expires   DateTime @default(dbgenerated("datetime('now', '+1 days')"))
+}
+
+model Comment {
+  id        String   @id @default(cuid())
+  likes     Int
+  content   String
+  createdAt DateTime @default(now())
+  edited    Boolean  @default(false)
+  author    User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  authorId  String
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  postId    String
+}
+
+model Relation {
+  userA   User   @relation("userA", fields: [userAId], references: [id], onDelete: Cascade)
+  userAId String
+  userB   User   @relation("userB", fields: [userBId], references: [id], onDelete: Cascade)
+  userBId String
+
+  type RelationType
+
+  @@id([userAId, userBId])
+}
+
+model FriendRequest {
+  createdAt  DateTime @default(now())
+  sender     User     @relation("sender", fields: [senderId], references: [id], onDelete: Cascade)
+  senderId   String
+  receiver   User     @relation("receiver", fields: [receiverId], references: [id], onDelete: Cascade)
+  receiverId String
+
+  @@id([senderId, receiverId])
+}
+
+model Notification {
+  createdAt   DateTime         @default(now())
+  owner       User             @relation("owner", fields: [ownerId], references: [id], onDelete: Cascade)
+  ownerId     String
+  associate   User             @relation("associate", fields: [associateId], references: [id], onDelete: Cascade)
+  associateId String
+  type        NotificationType
+
+  @@id([ownerId, associateId])
 }

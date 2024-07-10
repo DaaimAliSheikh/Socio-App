@@ -28,7 +28,7 @@ const EmailVerificationCard = () => {
       <h1 className="text-3xl text-center mb-6">
         {isValid ? "Your Email has been verified!" : "oops! Invalid Token"}
       </h1>
-      <Link href={"/signin?type=login"}>
+      <Link href={"/signin"}>
         <Button variant={"outline"}>
           <ChevronLeft className="mr-2" />
           Back to Login

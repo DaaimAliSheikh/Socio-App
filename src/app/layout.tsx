@@ -2,12 +2,7 @@ import { cn } from "@/lib/utils";
 import "./globals.css";
 import { Inter } from "next/font/google";
 import { ThemeProvider } from "@/components/theme-provider";
-import Container from "@/components/Container";
 import Navbar from "@/components/Navbar";
-import { auth } from "@/auth";
-import { Session } from "next-auth";
-import React from "react";
-import getUserById from "@/lib/getUserById";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -24,7 +19,7 @@ export default async function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body
         className={cn(
-          "min-h-screen bg-background  font-sans antialiased",
+          "min-h-screen  bg-background flex flex-col font-sans antialiased",
           inter.variable
         )}
       >
@@ -35,7 +30,7 @@ export default async function RootLayout({
           disableTransitionOnChange
         >
           <Navbar />
-          <Container>{children}</Container>
+          <div className="mt-16">{children}</div>
         </ThemeProvider>
       </body>
     </html>

@@ -1,5 +1,5 @@
 "use client";
-import React from "react";
+import React, { useState } from "react";
 
 import {
   DropdownMenu,
@@ -8,16 +8,6 @@ import {
   DropdownMenuTrigger,
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
-
-import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-  CommandSeparator,
-} from "@/components/ui/command";
 
 import { useTheme } from "next-themes";
 
@@ -32,6 +22,16 @@ import {
 } from "@/components/ui/navigation-menu";
 
 import {
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+  CommandSeparator,
+  CommandDialog,
+} from "@/components/ui/command";
+
+import {
   Bell,
   CircleUser,
   House,
@@ -41,58 +41,80 @@ import {
   Sun,
   Users,
   Search,
+  Trash2,
 } from "lucide-react";
 import { Button } from "./ui/button";
 
 import Link from "next/link";
-import { CommandDialog } from "./ui/command";
+import { User } from "@prisma/client";
+import { logoutAction } from "@/actions/auth_actions";
+import LogoutButton from "./LogoutButton";
+import { redirect } from "next/navigation";
 
-const notifications: string[] = [
-  "1awdawdawdwadawdwaddadscaawdwadawdsawdwada",
-  "2",
-  "1",
-  "2",
-  "1",
-  "2",
-  "1",
-  "2",
-  "1",
-  "2",
+const notifications = [
+  {
+    person: "dada",
+    type: "likawdwadwadawdsadwdsawdasdawdawwde",
+    date: "toawdadwadawdawdsawdaswdawdawdday",
+  },
+  {
+    person: "dada",
+    type: "likawdwadwadawdsadwdsawdasdawdawwde",
+    date: "toawdadwadawdawdsawdaswdawdawdday",
+  },
+  {
+    person: "dada",
+    type: "likawdwadwadawdsadwdsawdasdawdawwde",
+    date: "toawdadwadawdawdsawdaswdawdawdday",
+  },
+  {
+    person: "dada",
+    type: "likawdwadwadawdsadwdsawdasdawdawwde",
+    date: "toawdadwadawdawdsawdaswdawdawdday",
+  },
+  {
+    person: "dada",
+    type: "likawdwadwadawdsadwdsawdasdawdawwde",
+    date: "toawdadwadawdawdsawdaswdawdawdday",
+  },
+  {
+    person: "dada",
+    type: "likawdwadwadawdsadwdsawdasdawdawwde",
+    date: "toawdadwadawdawdsawdaswdawdawdday",
+  },
 ];
 
-const NavItems = () => {
+type NavItemsProps = {
+  user: User | null;
+};
+
+const NavItems = ({ user }: NavItemsProps) => {
   const { theme, setTheme } = useTheme();
-  const [open, setOpen] = React.useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
 
   return (
     <NavigationMenuList>
       <NavigationMenuItem>
         <NavigationMenuLink
-          onClick={() => setOpen(true)}
+          onClick={() => setSearchOpen(true)}
           className={navigationMenuTriggerStyle()}
         >
-          <Search className="text-primary mr-2 text-2xl" />
+          <Search className="text-primary  mr-2 text-2xl" />
           <p>Search</p>
         </NavigationMenuLink>
-      </NavigationMenuItem>
 
-      <CommandDialog open={open} onOpenChange={setOpen}>
-        <CommandInput placeholder="Search for People or Posts..." />
-        <CommandList>
-          <CommandEmpty>No results found.</CommandEmpty>
-          <CommandGroup heading="Posts">
-            <CommandItem>Calendar</CommandItem>
-            <CommandItem>Search Emoji</CommandItem>
-            <CommandItem>Calculator</CommandItem>
-          </CommandGroup>
-          <CommandSeparator />
-          <CommandGroup heading="People">
-            <CommandItem>a</CommandItem>
-            <CommandItem>Se</CommandItem>
-            <CommandItem>t</CommandItem>
-          </CommandGroup>
-        </CommandList>
-      </CommandDialog>
+        <CommandDialog open={searchOpen} onOpenChange={setSearchOpen}>
+          <CommandInput placeholder="Search for People or Posts..." />
+          <CommandList>
+            <CommandEmpty>No results found.</CommandEmpty>
+            <CommandGroup heading="Recent Searches">
+              <CommandItem>Search Emoji</CommandItem>
+              <CommandItem>Calculator</CommandItem>
+              <CommandItem>a</CommandItem>
+            </CommandGroup>
+          </CommandList>
+        </CommandDialog>
+      </NavigationMenuItem>
 
       <NavigationMenuItem>
         <Link href="/friends" legacyBehavior passHref>
@@ -115,30 +137,45 @@ const NavItems = () => {
       <NavigationMenuItem className="pr-4">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="outline" className=" relative">
+            <Button size={"sm"} variant="outline" className=" relative">
               <Bell className="text-primary mr-2 text-2xl" />
               <p>Notifications</p>
-              <div className="h-4 w-4 rounded-full bg-primary absolute top-[1px] left-3 border-2 border-background"></div>
+              <div className="h-4 w-4 rounded-full bg-primary absolute top-[1px] left-2 border-2 border-background"></div>
             </Button>
           </DropdownMenuTrigger>
 
-          <DropdownMenuContent className=" w-[300px]">
-            <ScrollArea className="h-72 w-[290px] rounded-none border-none">
+          <DropdownMenuContent className=" w-[20em]">
+            <ScrollArea className="h-72 rounded-none border-none">
               {notifications.map((notif, index) => (
-                <>
-                  <div key={index}>
-                    <Link href={"/profile"}>
-                      <DropdownMenuItem className="w-[270px] ">
-                        <li className="w-[270px] text-ellipsis overflow-hidden">
-                          {notif}
-                        </li>
-                      </DropdownMenuItem>
-                    </Link>
-                    {index !== notifications.length - 1 ? (
-                      <DropdownMenuSeparator className="my-1 w-[270px]" />
-                    ) : null}
+                <div
+                  key={index}
+                  className="flex rounded-md justify-between w-[calc(100%-7rem)]  items-center hover:bg-secondary hover:cursor-pointer "
+                >
+                  <div className="flex  overflow-hidden">
+                    <Avatar className=" m-2 h-10 w-10 border-1">
+                      <AvatarImage src="https://github.com/shadcn.png" />
+                      <AvatarFallback>CN</AvatarFallback>
+                    </Avatar>
+                    <div
+                      className={" ml-2 flex flex-col w-[70%]  justify-center "}
+                    >
+                      <h2
+                        className={
+                          "justify-center text-sm font-bold overflow-hidden  text-ellipsis"
+                        }
+                      >
+                        {notif.type}
+                      </h2>
+
+                      <p className="text-xs text-muted-foreground overflow-hidden  text-ellipsis">
+                        {notif?.date}
+                      </p>
+                    </div>
                   </div>
-                </>
+                  <Button size={"icon"} className="mr-1 ">
+                    <Trash2 size={22} />
+                  </Button>
+                </div>
               ))}
             </ScrollArea>
           </DropdownMenuContent>
@@ -148,28 +185,24 @@ const NavItems = () => {
       <NavigationMenuItem>
         <DropdownMenu>
           <DropdownMenuTrigger className="rounded-full">
-            <Avatar>
+            <Avatar className=" self-center">
               <AvatarImage src="https://github.com/shadcn.png" />
               <AvatarFallback>CN</AvatarFallback>
             </Avatar>
           </DropdownMenuTrigger>
-          <DropdownMenuContent className="w-[200px]">
-            <Link href={"/profile"}>
-              <DropdownMenuItem>
-                <CircleUser className="text-primary mr-4" />
-                <p>Profile</p>
-              </DropdownMenuItem>
-            </Link>
-
-            <Link href={"/profile"}>
-              <DropdownMenuItem>
-                <Settings className="text-primary mr-4" />
-                <p>Settings</p>
-              </DropdownMenuItem>
-            </Link>
+          <DropdownMenuContent className="w-[15rem] py-2">
+            <DropdownMenuItem>
+              <p>
+                <h2 className="text-1xl font-bold text-start">{user?.name}</h2>
+                <h3 className="text-sm text-muted-foreground">{user?.email}</h3>
+              </p>
+            </DropdownMenuItem>
 
             <DropdownMenuSeparator className="my-2" />
-            <DropdownMenuItem
+            <Button
+              variant={"ghost"}
+              className="w-full flex justify-start my-3 border"
+              type="button"
               onClick={() => setTheme(theme == "dark" ? "light" : "dark")}
             >
               {theme == "dark" ? (
@@ -179,11 +212,16 @@ const NavItems = () => {
               )}
 
               <p>Mode: {theme}</p>
-            </DropdownMenuItem>
-            <DropdownMenuItem>
-              <Power className="text-primary mr-4" />
-              <p>Log out</p>
-            </DropdownMenuItem>
+            </Button>
+            <form
+              className="w-full  "
+              action={async () => {
+                await logoutAction();
+                redirect("/signin");
+              }}
+            >
+              <LogoutButton />
+            </form>
           </DropdownMenuContent>
         </DropdownMenu>
       </NavigationMenuItem>

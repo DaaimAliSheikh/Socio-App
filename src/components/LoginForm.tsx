@@ -1,8 +1,7 @@
 "use client";
 
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
-import { signIn } from "next-auth/react";
 
 import {
   Form,
@@ -12,8 +11,6 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-
-import { FcGoogle } from "react-icons/fc";
 
 import { Input } from "@/components/ui/input";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -26,10 +23,22 @@ import { loginAction } from "@/actions/auth_actions";
 import ErrorAlert from "./ErrorAlert";
 import SuccessAlert from "./SuccessAlert";
 import { LoaderCircle } from "lucide-react";
+import { useSearchParams } from "next/navigation";
+import OAuthForm from "./OAuthForm";
 
 const LoginForm = () => {
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
+  const params = useSearchParams();
+
+  useEffect(() => {
+    if (params) {
+      if (params.get("error") === "OAuthAccountNotLinked") {
+        setSuccessMsg(null);
+        setErrorMsg("Email already registered with a different provider");
+      }
+    }
+  }, [params]);
 
   const onSubmit = useCallback(async (data: LoginFormType) => {
     const result = await loginAction(data);
@@ -46,6 +55,7 @@ const LoginForm = () => {
   }, []);
 
   const form = useForm<LoginFormType>({
+    shouldUnregister: false,
     resolver: zodResolver(LoginFormSchema),
     defaultValues: {
       email: "",
@@ -106,27 +116,10 @@ const LoginForm = () => {
               <p className="text-muted-foreground">or</p>
               <Separator className="w-[45%] ml-2" />
             </div>
-            <Button
-              onClick={(e) =>
-                signIn("google", { callbackUrl: signInRedirectUrl })
-              }
-              variant={"secondary"}
-              type="button"
-            >
-              <FcGoogle className=" text-2xl mr-2 " />
-              <p>Sign in with Google</p>
-            </Button>
           </form>
         </Form>
+        <OAuthForm />
       </CardContent>
-      <CardFooter>
-        <a
-          href="/signin?type=register"
-          className=" mx-auto text-muted-foreground hover:underline "
-        >
-          Don&rsquo;t have an account?
-        </a>
-      </CardFooter>
     </Card>
   );
 };
