@@ -6,22 +6,19 @@ import { SubmitHandler, useForm } from "react-hook-form";
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
 import { Label } from "./ui/label";
-import { Textarea } from "./ui/textarea";
 import { useDropzone } from "react-dropzone";
 import { Badge } from "./ui/badge";
 
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "./ui/separator";
 import { X } from "lucide-react";
-import PublishPost from "@/actions/PublishPost";
+import PublishStory from "@/actions/PublishStory";
 
-export interface PostFormInputs {
-  title: string;
-  description: string;
+export interface StoryFormInputs {
   media?: File[];
 }
 
-const onSubmit: SubmitHandler<PostFormInputs> = async (data) => {
+const onSubmit: SubmitHandler<StoryFormInputs> = async (data) => {
   const formData = new FormData();
   Object.entries(data).forEach(([key, value]) => {
     if (key === "media") {
@@ -33,19 +30,19 @@ const onSubmit: SubmitHandler<PostFormInputs> = async (data) => {
     }
   });
 
-  const result = await PublishPost(formData);
+  const result = await PublishStory(formData);
   console.log(result);
   ///to do, not send these links here t client but save them in the db on the server action
 };
 
-const NewPostForm = ({ post }: any) => {
+const NewStoryForm = () => {
   const {
     handleSubmit,
     register,
     unregister,
     setValue,
     formState: { errors, isSubmitting },
-  } = useForm<PostFormInputs>({ shouldUnregister: false });
+  } = useForm<StoryFormInputs>({ shouldUnregister: false });
 
   useEffect(() => {
     register("media");
@@ -62,7 +59,7 @@ const NewPostForm = ({ post }: any) => {
         "image/gif": [".gif"],
         "image/webp": [".webp"],
       },
-      maxFiles: 5,
+      maxFiles: 1,
       onDrop: (acceptedFiles) => {
         setValue("media", acceptedFiles, { shouldValidate: true });
       },
@@ -89,42 +86,12 @@ const NewPostForm = ({ post }: any) => {
   });
 
   return (
-    <ScrollArea className="w-full h-[80vh]">
+    <ScrollArea className="w-full flex  h-[50vh]  mt-6">
       <form
         onSubmit={handleSubmit(onSubmit)}
         className="flex flex-col w-full ml-1 space-y-4 text-sm"
       >
-        <div className="grid w-full max-w-sm items-center gap-1.5">
-          <Label htmlFor="title">Post Title*</Label>
-          <Input
-            {...register("title", {
-              required: "Post Title is required",
-            })}
-            id="title"
-            placeholder={post?.title || "This is my cool post's title!"}
-            className="h-[2rem] mt-1"
-          />
-          <p className="text-red-500">{errors.title?.message as string}</p>
-        </div>
-        <div className="grid    w-full max-w-sm items-center gap-1.5">
-          <Label htmlFor="description">Post Description*</Label>
-          <Textarea
-            className="resize-none mt-1"
-            {...register("description", {
-              required: "Post Description is required",
-            })}
-            rows={6}
-            id="description"
-            placeholder={
-              post?.description || "This is my cool post's description!"
-            }
-          />
-          <p className="text-red-500">{errors.description?.message}</p>
-        </div>
-
-        <Label htmlFor="media">
-          Post Photos <span className="font-bold">(optional)</span>
-        </Label>
+        <Label htmlFor="media">Select a photo for your story</Label>
         <div
           {...getRootProps({
             className:
@@ -133,12 +100,9 @@ const NewPostForm = ({ post }: any) => {
         >
           <input id="media" {...getInputProps()} />
           <p className="text-center">
-            {post
-              ? "Drag 'n' drop new files to replace the old ones"
-              : "Drag 'n' drop some files here, or click to select files"}
-
+            Drag 'n' drop your file here, or click to upload
             <br />
-            <span className="font-bold">(Max 5)</span>
+            <span className="font-bold">(Max 1)</span>
           </p>
         </div>
         <ul className="flex flex-wrap items-center gap-2 ">
@@ -174,11 +138,11 @@ const NewPostForm = ({ post }: any) => {
           className="self-center text-foreground hover:bg-secondary"
           type="submit"
         >
-          {post ? "Save Changes" : "Publish"}
+          Publish
         </Button>
       </form>
     </ScrollArea>
   );
 };
 
-export default NewPostForm;
+export default NewStoryForm;

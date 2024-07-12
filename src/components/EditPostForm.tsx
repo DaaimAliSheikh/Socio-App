@@ -19,6 +19,7 @@ export interface PostFormInputs {
   title: string;
   description: string;
   media?: File[];
+  toRemove?: string[];
 }
 
 const onSubmit: SubmitHandler<PostFormInputs> = async (data) => {
@@ -38,7 +39,7 @@ const onSubmit: SubmitHandler<PostFormInputs> = async (data) => {
   ///to do, not send these links here t client but save them in the db on the server action
 };
 
-const NewPostForm = ({ post }: any) => {
+const EditPostForm = ({ post }: any) => {
   const {
     handleSubmit,
     register,
@@ -73,6 +74,12 @@ const NewPostForm = ({ post }: any) => {
     setValue("media", acceptedFiles, { shouldValidate: true });
   };
 
+  const addToRemove = (file: string) => {
+    setValue("toRemove", file, {
+      shouldValidate: true,
+    });
+  };
+
   const fileRejectionItems = fileRejections.map(({ file, errors }) => {
     return (
       <li key={file.name}>
@@ -101,7 +108,7 @@ const NewPostForm = ({ post }: any) => {
               required: "Post Title is required",
             })}
             id="title"
-            placeholder={post?.title || "This is my cool post's title!"}
+            placeholder={post?.title}
             className="h-[2rem] mt-1"
           />
           <p className="text-red-500">{errors.title?.message as string}</p>
@@ -113,7 +120,7 @@ const NewPostForm = ({ post }: any) => {
             {...register("description", {
               required: "Post Description is required",
             })}
-            rows={6}
+            rows={4}
             id="description"
             placeholder={
               post?.description || "This is my cool post's description!"
@@ -133,10 +140,7 @@ const NewPostForm = ({ post }: any) => {
         >
           <input id="media" {...getInputProps()} />
           <p className="text-center">
-            {post
-              ? "Drag 'n' drop new files to replace the old ones"
-              : "Drag 'n' drop some files here, or click to select files"}
-
+            Drag 'n' drop some files here, or click to select files
             <br />
             <span className="font-bold">(Max 5)</span>
           </p>
@@ -174,11 +178,11 @@ const NewPostForm = ({ post }: any) => {
           className="self-center text-foreground hover:bg-secondary"
           type="submit"
         >
-          {post ? "Save Changes" : "Publish"}
+          Save Changes
         </Button>
       </form>
     </ScrollArea>
   );
 };
 
-export default NewPostForm;
+export default EditPostForm;

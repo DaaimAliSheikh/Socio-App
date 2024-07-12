@@ -1,6 +1,12 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "./ui/button";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 import {
   DropdownMenu,
@@ -9,7 +15,17 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { Heart, Pencil } from "lucide-react";
+import { Input } from "./ui/input";
+import { Textarea } from "./ui/textarea";
 
 const Comment = ({
   comment,
@@ -24,16 +40,23 @@ const Comment = ({
     edited: boolean;
   };
 }) => {
+  const [isOverflow, setIsOverflow] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
+  const [open, setOpen] = useState(false);
   const textContainerRef = useRef<HTMLElement>(null);
   useEffect(() => {
-    if (textContainerRef.current)
+    if (textContainerRef.current) {
+      setIsOverflow(
+        textContainerRef.current.scrollHeight >
+          textContainerRef.current.clientHeight
+      );
       setIsExpanded(
         !(
           textContainerRef.current.scrollHeight >
           textContainerRef.current.clientHeight
         )
       );
+    }
   }, []);
 
   return (
@@ -61,7 +84,7 @@ const Comment = ({
             className={`${
               isExpanded ? "" : "overflow-hidden h-[3.8rem]"
             } flex mx-2 relative hover:cursor-pointer my-2 w-full`}
-            onClick={() => setIsExpanded(!isExpanded)}
+            onClick={() => isOverflow && setIsExpanded(!isExpanded)}
           >
             {!isExpanded ? (
               <div className=" flex  text-sm text-blue-600 absolute bottom-0 right-0">
@@ -86,21 +109,54 @@ const Comment = ({
       </div>
 
       <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button
-            variant={"ghost"}
-            size={"icon"}
-            className="mr-4 px-2 py-1 flex gap-2"
-          >
-            <Pencil size={16} />
-          </Button>
-        </DropdownMenuTrigger>
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant={"ghost"}
+                  size={"icon"}
+                  className="mr-4 px-2 py-1 flex gap-2"
+                >
+                  <Pencil size={16} />
+                </Button>
+              </DropdownMenuTrigger>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Edit Comment</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+
         <DropdownMenuContent className="w-14">
-          <DropdownMenuItem>Edit</DropdownMenuItem>
+          <DropdownMenuItem onClick={() => setOpen(true)}>
+            Edit
+          </DropdownMenuItem>
+
           <DropdownMenuSeparator />
           <DropdownMenuItem>Delete</DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Edit your comment</DialogTitle>
+          </DialogHeader>
+          <div className="flex gap-x-3 items-center">
+            <Avatar className="h-8 w-8">
+              <AvatarImage src="https://github.com/shadcn.png" />
+              <AvatarFallback>CN</AvatarFallback>
+            </Avatar>
+            <Textarea
+              className="h-[2rem] resize-none"
+              placeholder="Add a comment..."
+            ></Textarea>
+          </div>
+          <Button className="w-fit mx-auto" size={"sm"} type="submit">
+            Save Changes
+          </Button>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

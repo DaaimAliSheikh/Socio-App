@@ -1,6 +1,6 @@
 "use client";
 import React, { useEffect, useRef, useState } from "react";
-import { Card } from "./ui/card";
+import { Card, CardContent } from "./ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Forward, Heart, MessageCircle, Pencil, Settings } from "lucide-react";
 import {
@@ -9,6 +9,14 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 
 import {
   DropdownMenu,
@@ -20,26 +28,36 @@ import {
 import { Button } from "./ui/button";
 import Image from "next/image";
 import CommentSection from "./CommentSection";
+import ImageView from "./ImageView";
+import NewPostForm from "./NewPostForm";
 
 const post = {
   user: "dad",
-  caption:
-    "likawdawdsa dwdsfdfbd fbdsefsdfsfsfwa ffdvvdfdfvdfvdfv fdvfdvfdbfd bdfbdbdf bdfbdbe bdfbdbe bdfbdbe bdfbdbe bdfbdbebdfbdbebdfbdbe bdfbdbe bdfbdbe bdfbdbe bdfbdbe bdfbdbe bdfbdbe bdfbdbe bdfbdbe bdfbdbe bdfbdbe bdfbdbe bdfbdbe bdfbdbe bdfbdbe bdfbdbe bdfbdbe bdfbdbe bdfbdbe bdfbdbe bdfbdbe bdfbdbe ",
+  title: "cojvosdv",
+  description:
+    "sdf Lorem ipsum dolor sit, amet consectetur adipisicing elit. Reprehenderit vel sed molestias qui ad, commodi velit doloribus quibusdam tenetur iusto voluptatibus sit minus est similique itaque necessitatibus soluta nisi error. Lorem ipsum dolor sit amet consectetur adipisicing elit. Voluptates dolore sit molestiae enim blanditiis ab facilis? Quas eligendi provident deleniti nihil alias expedita, fugit doloremque earum magni laborum aspernatur harum. ",
   date: "today",
-  img: "adadw",
+  img: ["adw", "awdawd"],
 };
 const Post = () => {
   const [isExpanded, setIsExpanded] = useState(false);
+  const [isOverflow, setIsOverflow] = useState(false);
   const [showComments, setShowComments] = useState(false);
+  const [open, setOpen] = useState(false);
   const textContainerRef = useRef<HTMLElement>(null);
   useEffect(() => {
-    if (textContainerRef.current)
+    if (textContainerRef.current) {
+      setIsOverflow(
+        textContainerRef.current.scrollHeight >
+          textContainerRef.current.clientHeight
+      );
       setIsExpanded(
         !(
           textContainerRef.current.scrollHeight >
           textContainerRef.current.clientHeight
         )
       );
+    }
   }, []);
   return (
     <Card className={`p-2 `}>
@@ -69,30 +87,50 @@ const Post = () => {
         </div>
 
         <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button
-              variant={"ghost"}
-              size={"icon"}
-              className="mr-4 px-2 py-1 flex gap-2"
-            >
-              <Pencil size={18} className="text-muted-foreground" />
-            </Button>
-          </DropdownMenuTrigger>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant={"ghost"}
+                    size={"icon"}
+                    className="mr-4 px-2 py-1 flex gap-2"
+                  >
+                    <Pencil size={18} className="text-muted-foreground" />
+                  </Button>
+                </DropdownMenuTrigger>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Edit Post</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+
           <DropdownMenuContent className="w-14">
-            <DropdownMenuItem>Edit</DropdownMenuItem>
+            <DropdownMenuItem onClick={() => setOpen(true)}>
+              Edit
+            </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem>Delete</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
+        <Dialog open={open} onOpenChange={setOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Edit Post</DialogTitle>
+            </DialogHeader>
+            <NewPostForm post={post} />
+          </DialogContent>
+        </Dialog>
       </div>
       <main
         ref={textContainerRef}
         className={`${
           isExpanded ? "" : "overflow-hidden h-[3.8rem]"
         } flex mx-2 relative hover:cursor-pointer my-2 `}
-        onClick={() => setIsExpanded(!isExpanded)}
+        onClick={() => (isOverflow ? setIsExpanded(!isExpanded) : null)}
       >
-        {!isExpanded ? (
+        {!isExpanded && isOverflow ? (
           <div className=" flex  text-sm text-blue-600 absolute bottom-0 right-0">
             <p className="w-[4rem] bg-gradient-to-r from-transparent  to-card"></p>
             <p className="bg-card">
@@ -101,17 +139,52 @@ const Post = () => {
           </div>
         ) : null}
 
-        <p className="text-sm  ">{post.caption}</p>
+        <p className="text-sm  ">{post.title}</p>
       </main>
       <main className="p-2">
-        <Image
-          alt="post image"
-          src={"/socio/COOL_OiXrrxaha.jpeg"}
-          height={200}
-          width={200}
-          sizes="100vw"
-          className="object-cover w-full rounded-md  hover:cursor-pointer"
-        ></Image>
+        <Dialog>
+          <DialogTrigger asChild>
+            <Image
+              alt="post image"
+              src={"/socio/COOL_OiXrrxaha.jpeg"}
+              height={200}
+              width={200}
+              sizes="100vw"
+              className="object-cover w-full rounded-md  hover:cursor-pointer"
+            ></Image>
+          </DialogTrigger>
+          <DialogContent className="w-[90%] max-w-[40rem] ">
+            <DialogHeader>
+              <DialogTitle>
+                <div className="flex text-start overflow-hidden">
+                  <Avatar className=" m-2 h-10 w-10 border-1">
+                    <AvatarImage src="https://github.com/shadcn.png" />
+                    <AvatarFallback>CN</AvatarFallback>
+                  </Avatar>
+                  <div
+                    className={
+                      " ml-2 flex flex-col w-[70%] md:w-[80%]  justify-center  leading-6"
+                    }
+                  >
+                    <h2
+                      className={
+                        "justify-center text-lg font-bold overflow-hidden  text-ellipsis"
+                      }
+                    >
+                      {post.user}
+                    </h2>
+
+                    <p className="text-xs text-muted-foreground overflow-hidden  text-ellipsis">
+                      {post?.date}
+                    </p>
+                  </div>
+                </div>
+              </DialogTitle>
+            </DialogHeader>
+
+            <ImageView images={post.img} />
+          </DialogContent>
+        </Dialog>
       </main>
       <div className="flex justify-between items-center mx-8 ">
         <TooltipProvider>
@@ -130,7 +203,7 @@ const Post = () => {
             <TooltipTrigger asChild>
               <Button
                 variant={"ghost"}
-                className="-ml-2"
+                className="-ml-4"
                 size={"icon"}
                 onClick={() => setShowComments(!showComments)}
               >

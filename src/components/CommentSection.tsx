@@ -11,7 +11,7 @@ const comments = [
     date: "fs",
     image: "wda",
     content:
-      "awdawdddddddddddddddddddddddddad awdsadwad wd wa da dn sadh ad a lorem ipsum dolor sit amet consectetur adipisicing elit. Nihil, voluptatum.",
+      "awdawdddddddddddddddddddddddddad awdsadwad wd wa da dn sadh ad a lorem ipsum dolor sit amet consectetur adipisicing elit. Nihil, voluptatum. awdawdddddddddddddddddddddddddad awdsadwad wd wa da dn sadh ad a lorem ipsum dolor sit amet consectetur adipisicing elit. Nihil, voluptatum",
     parent: "",
     likes: 2,
     edited: false,

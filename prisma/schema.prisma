@@ -33,6 +33,7 @@ model User {
   image         String?
   coverImage    String?
   password      String?
+  bio           String?
   posts         Post[]
   accounts      Account[]
   Comments      Comment[]
@@ -95,7 +96,7 @@ model Story {
   User      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId    String
   imagePath String
-  expires   DateTime @default(dbgenerated("datetime('now', '+1 days')"))
+  expires   DateTime
 }
 
 model Comment {

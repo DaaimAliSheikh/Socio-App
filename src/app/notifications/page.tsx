@@ -6,11 +6,7 @@ import { Button } from "@/components/ui/button";
 
 const notifications = [{ person: "dad", type: "like", date: "today" }];
 
-const MobileNotificationsPage = ({
-  params,
-}: {
-  params: { userId: string };
-}) => {
+const NotificationsPage = ({ params }: { params: { userId: string } }) => {
   ///retrieve the notifications from the database server action
 
   return (
@@ -59,4 +55,4 @@ const MobileNotificationsPage = ({
   );
 };
 
-export default MobileNotificationsPage;
+export default NotificationsPage;
