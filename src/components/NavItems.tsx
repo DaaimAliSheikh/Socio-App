@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 
 import {
   DropdownMenu,
@@ -42,6 +42,8 @@ import {
   Users,
   Search,
   Trash2,
+  RefreshCcw,
+  LoaderCircle,
 } from "lucide-react";
 import { Button } from "./ui/button";
 
@@ -50,47 +52,31 @@ import { User } from "@prisma/client";
 import { logoutAction } from "@/actions/auth_actions";
 import LogoutButton from "./LogoutButton";
 import { redirect } from "next/navigation";
+import generateInitials from "@/lib/generateInitials";
+import getNotifications from "@/actions/getNotifications";
+import { NotificationItem } from "@/lib/types";
+import getTimeAgo from "@/lib/getTimeAgo";
+import generateNotifContent from "@/lib/generateNotifContent";
+import Image from "next/image";
 
-const notifications = [
-  {
-    person: "dada",
-    type: "likawdwadwadawdsadwdsawdasdawdawwde",
-    date: "toawdadwadawdawdsawdaswdawdawdday",
-  },
-  {
-    person: "dada",
-    type: "likawdwadwadawdsadwdsawdasdawdawwde",
-    date: "toawdadwadawdawdsawdaswdawdawdday",
-  },
-  {
-    person: "dada",
-    type: "likawdwadwadawdsadwdsawdasdawdawwde",
-    date: "toawdadwadawdawdsawdaswdawdawdday",
-  },
-  {
-    person: "dada",
-    type: "likawdwadwadawdsadwdsawdasdawdawwde",
-    date: "toawdadwadawdawdsawdaswdawdawdday",
-  },
-  {
-    person: "dada",
-    type: "likawdwadwadawdsadwdsawdasdawdawwde",
-    date: "toawdadwadawdawdsawdaswdawdawdday",
-  },
-  {
-    person: "dada",
-    type: "likawdwadwadawdsadwdsawdasdawdawwde",
-    date: "toawdadwadawdawdsawdaswdawdawdday",
-  },
-];
+import notifpic from "../../public/no-notifs-pic.svg";
+import NotificationDeleteButton from "./NotificationDeleteButton";
+import deleteNotification from "@/actions/deleteNotification";
 
-type NavItemsProps = {
-  user: User | null;
-};
-
-const NavItems = ({ user }: NavItemsProps) => {
+const NavItems = ({ user }: { user: User }) => {
   const { theme, setTheme } = useTheme();
   const [searchOpen, setSearchOpen] = useState(false);
+  const [refreshDisabled, setRefreshDisabled] = useState(false);
+  const [notifications, setNotifications] = useState<NotificationItem[]>([]);
+
+  const fetchNotifications = useCallback(async () => {
+    const notifs = await getNotifications(user.id);
+    setNotifications(notifs);
+  }, []);
+
+  useEffect(() => {
+    fetchNotifications();
+  }, []);
 
   return (
     <NavigationMenuList>
@@ -140,43 +126,82 @@ const NavItems = ({ user }: NavItemsProps) => {
             <Button size={"sm"} variant="outline" className=" relative">
               <Bell className="text-primary mr-2 text-2xl" />
               <p>Notifications</p>
-              <div className="h-4 w-4 rounded-full bg-primary absolute top-[1px] left-2 border-2 border-background"></div>
             </Button>
           </DropdownMenuTrigger>
 
           <DropdownMenuContent className=" w-[20em]">
-            <ScrollArea className="h-72 rounded-none border-none">
-              {notifications.map((notif, index) => (
-                <div
-                  key={index}
-                  className="flex rounded-md justify-between w-[calc(100%-7rem)]  items-center hover:bg-secondary hover:cursor-pointer "
-                >
-                  <div className="flex  overflow-hidden">
-                    <Avatar className=" m-2 h-10 w-10 border-1">
-                      <AvatarImage src="https://github.com/shadcn.png" />
-                      <AvatarFallback>CN</AvatarFallback>
-                    </Avatar>
+            <h2 className="text-md flex items-center px-2 justify-between">
+              Notifications
+              <Button
+                size={"icon"}
+                className="w-8 h-8"
+                disabled={refreshDisabled}
+                onClick={async () => {
+                  setRefreshDisabled(true);
+                  await fetchNotifications();
+                  setRefreshDisabled(false);
+                }}
+              >
+                {refreshDisabled ? (
+                  <LoaderCircle size={18} className="animate-spin" />
+                ) : (
+                  <RefreshCcw size={18} />
+                )}
+              </Button>
+            </h2>
+            <ScrollArea className="h-72 mt-2 rounded-none border-none">
+              {notifications.length > 0 ? (
+                notifications.map((notif, index) => (
+                  <div
+                    key={index}
+                    className="flex justify-between w-full p-2 rounded-md items-center hover:bg-secondary hover:cursor-pointer "
+                  >
+                    <div className="w-[20%] flex justify-center items-center">
+                      <Avatar>
+                        <AvatarImage src={notif.associate.image || ""} />
+                        <AvatarFallback>
+                          {generateInitials(notif.associate.name)}
+                        </AvatarFallback>
+                      </Avatar>
+                    </div>
                     <div
-                      className={" ml-2 flex flex-col w-[70%]  justify-center "}
+                      className={
+                        " flex flex-col w-[66%]  px-1  justify-center "
+                      }
                     >
-                      <h2
-                        className={
-                          "justify-center text-sm font-bold overflow-hidden  text-ellipsis"
-                        }
-                      >
-                        {notif.type}
+                      <h2 className="whitespace-nowrap text-sm overflow-hidden text-ellipsis">
+                        {generateNotifContent(notif)}
                       </h2>
 
-                      <p className="text-xs text-muted-foreground overflow-hidden  text-ellipsis">
-                        {notif?.date}
+                      <p className="text-muted-foreground text-xs">
+                        {getTimeAgo(notif.createdAt)}
                       </p>
                     </div>
+                    <form
+                      action={async () => {
+                        await deleteNotification(notif.id);
+                        fetchNotifications();
+                      }}
+                      className=" w-[14%] flex justify-center items-center"
+                    >
+                      <NotificationDeleteButton />
+                    </form>
                   </div>
-                  <Button size={"icon"} className="mr-1 ">
-                    <Trash2 size={22} />
-                  </Button>
-                </div>
-              ))}
+                ))
+              ) : (
+                <>
+                  <Image
+                    className=" mx-auto mt-20"
+                    width={100}
+                    height={100}
+                    alt={"no notifications svg"}
+                    src={notifpic}
+                  ></Image>
+                  <h1 className="text-sm text-muted-foreground text-center mt-6">
+                    No notifications!
+                  </h1>
+                </>
+              )}
             </ScrollArea>
           </DropdownMenuContent>
         </DropdownMenu>
@@ -186,15 +211,15 @@ const NavItems = ({ user }: NavItemsProps) => {
         <DropdownMenu>
           <DropdownMenuTrigger className="rounded-full">
             <Avatar className=" self-center">
-              <AvatarImage src="https://github.com/shadcn.png" />
-              <AvatarFallback>CN</AvatarFallback>
+              <AvatarImage src={user.image || ""} />
+              <AvatarFallback>{generateInitials(user.name)}</AvatarFallback>
             </Avatar>
           </DropdownMenuTrigger>
           <DropdownMenuContent className="w-[15rem] py-2">
             <DropdownMenuItem>
               <p>
-                <h2 className="text-1xl font-bold text-start">{user?.name}</h2>
-                <h3 className="text-sm text-muted-foreground">{user?.email}</h3>
+                <h2 className="text-1xl font-bold text-start">{user.name}</h2>
+                <h3 className="text-sm text-muted-foreground">{user.email}</h3>
               </p>
             </DropdownMenuItem>
 

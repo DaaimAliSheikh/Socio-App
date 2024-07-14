@@ -26,14 +26,15 @@ const Navbar = async () => {
       </Link>
 
       {/*navigation links */}
+      {user ? (
+        <Card className="border-none shadow-none bg-transparent">
+          <NavigationMenu className={user ? "md:block hidden" : " hidden"}>
+            <NavItems user={user} />
+          </NavigationMenu>
 
-      <Card className="border-none shadow-none bg-transparent">
-        <NavigationMenu className={user ? "md:block hidden" : " hidden"}>
-          <NavItems user={user ? user : null} />
-        </NavigationMenu>
-
-        {user ? <SideNav user={user ? user : null} /> : null}
-      </Card>
+          {user ? <SideNav user={user} /> : null}
+        </Card>
+      ) : null}
     </nav>
   );
 };

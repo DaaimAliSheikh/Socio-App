@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useCallback, useEffect, useState } from "react";
-import { Card, CardContent, CardFooter } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 
 import {
   Form,
@@ -102,7 +102,7 @@ const LoginForm = () => {
 
             <Button
               disabled={form.formState.isSubmitting}
-              className=" w-full text-foreground hover:bg-primary-foreground"
+              className=" w-full text-foreground"
               type="submit"
             >
               Login

@@ -30,16 +30,12 @@ import Image from "next/image";
 import CommentSection from "./CommentSection";
 import ImageView from "./ImageView";
 import NewPostForm from "./NewPostForm";
+import generateInitials from "@/lib/generateInitials";
+import { PostItem } from "@/lib/types";
+import getTimeAgo from "@/lib/getTimeAgo";
 
-const post = {
-  user: "dad",
-  title: "cojvosdv",
-  description:
-    "sdf Lorem ipsum dolor sit, amet consectetur adipisicing elit. Reprehenderit vel sed molestias qui ad, commodi velit doloribus quibusdam tenetur iusto voluptatibus sit minus est similique itaque necessitatibus soluta nisi error. Lorem ipsum dolor sit amet consectetur adipisicing elit. Voluptates dolore sit molestiae enim blanditiis ab facilis? Quas eligendi provident deleniti nihil alias expedita, fugit doloremque earum magni laborum aspernatur harum. ",
-  date: "today",
-  img: ["adw", "awdawd"],
-};
-const Post = () => {
+
+const Post = ({ post }: { post: PostItem }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [isOverflow, setIsOverflow] = useState(false);
   const [showComments, setShowComments] = useState(false);
@@ -64,8 +60,10 @@ const Post = () => {
       <div className="flex justify-between items-center">
         <div className="flex  overflow-hidden">
           <Avatar className=" m-2 h-10 w-10 border-1">
-            <AvatarImage src="https://github.com/shadcn.png" />
-            <AvatarFallback>CN</AvatarFallback>
+            <AvatarImage src={post.author.image || ""} />
+            <AvatarFallback>
+              {generateInitials(post.author.name)}
+            </AvatarFallback>
           </Avatar>
           <div
             className={
@@ -77,11 +75,11 @@ const Post = () => {
                 "justify-center text-lg font-bold overflow-hidden  text-ellipsis"
               }
             >
-              {post.user}
+              {post.author.name}
             </h2>
 
             <p className="text-xs text-muted-foreground overflow-hidden  text-ellipsis">
-              {post?.date}
+              {getTimeAgo(post.createdAt)}
             </p>
           </div>
         </div>

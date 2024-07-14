@@ -1,4 +1,3 @@
-import { Card, CardContent } from "@/components/ui/card";
 import {
   Carousel,
   CarouselContent,
@@ -6,11 +5,23 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "@/components/ui/carousel";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+
 import { Progress } from "@/components/ui/progress";
 import { type CarouselApi } from "@/components/ui/carousel";
 import Autoplay from "embla-carousel-autoplay";
 
 import { useEffect, useState } from "react";
+import { StoryItem } from "@/lib/types";
+import getTimeAgo from "@/lib/getTimeAgo";
+import generateInitials from "@/lib/generateInitials";
+import { Button } from "./ui/button";
+import { LoaderCircle, Trash2 } from "lucide-react";
+import deleteStory from "@/actions/deleteStory";
+import { User } from "@prisma/client";
+import Image from "next/image";
+import { redirect, useRouter } from "next/navigation";
+import { Card } from "./ui/card";
 
 const viewDurationSeconds = 6;
 
@@ -19,10 +30,18 @@ const autoplay = Autoplay({
   stopOnInteraction: false,
 });
 
-export function StoryView() {
+export function StoryView({
+  stories,
+  user,
+}: {
+  stories: StoryItem[];
+  user: User;
+}) {
   const [api, setApi] = useState<CarouselApi>();
   const [progressValue, setProgressValue] = useState(0);
   const [toggle, setToggle] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -59,33 +78,59 @@ export function StoryView() {
       plugins={[autoplay]}
     >
       <CarouselContent>
-        <CarouselItem>
-          <div className="p-1">
+        {stories.map((story, index) => (
+          <CarouselItem key={index} className="flex flex-col max-h-[85vh]">
             <Card>
-              <CardContent className="flex aspect-square items-center justify-center p-6">
-                bruh
-              </CardContent>
+              <div className="flex w-full p-2 items-center justify-between">
+                <div
+                  className="flex items-center"
+                  onClick={() => router.push(`/profile/${story.user.id}`)}
+                >
+                  <Avatar className=" w-10 h-10 mr-2 border-2">
+                    <AvatarImage src={story.user.image || ""} />
+                    <AvatarFallback>
+                      {generateInitials(story.user.name)}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div>
+                    <p>{story.user.name}</p>
+                    <p className="text-xs font-thin text-muted-foreground text-start">
+                      {getTimeAgo(story.createdAt)}
+                    </p>
+                  </div>
+                </div>
+                {story.user.id === user.id && (
+                  <Button
+                    size={"icon"}
+                    className="w-8 h-8"
+                    disabled={isDeleting}
+                    variant={"outline"}
+                    onClick={async () => {
+                      setIsDeleting(true);
+                      await deleteStory(story.id);
+                      router.refresh();
+                      setIsDeleting(false);
+                    }}
+                  >
+                    {isDeleting ? (
+                      <LoaderCircle className="animate-spin" size={20} />
+                    ) : (
+                      <Trash2 size={20} />
+                    )}
+                  </Button>
+                )}
+              </div>
+              <Image
+                className=" w-full object-cover px-4 "
+                height={300}
+                width={200}
+                alt="story image"
+                sizes="100vw"
+                src={story.imagePath}
+              ></Image>
             </Card>
-          </div>
-        </CarouselItem>
-        <CarouselItem>
-          <div className="p-1">
-            <Card>
-              <CardContent className="flex aspect-square items-center justify-center p-6">
-                meh
-              </CardContent>
-            </Card>
-          </div>
-        </CarouselItem>
-        <CarouselItem>
-          <div className="p-1">
-            <Card>
-              <CardContent className="flex aspect-square items-center justify-center p-6">
-                guh
-              </CardContent>
-            </Card>
-          </div>
-        </CarouselItem>
+          </CarouselItem>
+        ))}
       </CarouselContent>
       <Progress value={progressValue} />
 

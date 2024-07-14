@@ -28,12 +28,9 @@ import { useTheme } from "next-themes";
 import { logoutAction } from "@/actions/auth_actions";
 import LogoutButton from "./LogoutButton";
 import { redirect } from "next/navigation";
+import generateInitials from "@/lib/generateInitials";
 
-type SideNavProps = {
-  user: User | null;
-};
-
-const SideNav = ({ user }: SideNavProps) => {
+const SideNav = ({ user }: { user: User }) => {
   const { theme, setTheme } = useTheme();
   const [searchOpen, setSearchOpen] = useState(false);
   const [sheetOpen, setSheetOpen] = useState(false);
@@ -53,15 +50,17 @@ const SideNav = ({ user }: SideNavProps) => {
               <SheetClose asChild>
                 <Card className="flex  shadow-sm hover:cursor-pointer items-center my-2 w-full group p-2 hover:bg-secondary ">
                   <Avatar className="h-10 w-10 ">
-                    <AvatarImage src="https://github.com/shadcn.png" />
-                    <AvatarFallback>CN</AvatarFallback>
+                    <AvatarImage src={user.image || ""} />
+                    <AvatarFallback>
+                      {generateInitials(user.name)}
+                    </AvatarFallback>
                   </Avatar>
                   <div className="ml-4 ">
                     <h2 className="text-1xl font-bold text-start">
-                      {user?.name}
+                      {user.name}
                     </h2>
                     <h3 className="text-sm text-muted-foreground">
-                      {user?.email}
+                      {user.email}
                     </h3>
                   </div>
                 </Card>
@@ -93,7 +92,6 @@ const SideNav = ({ user }: SideNavProps) => {
                   <p>Search</p>
                 </Button>
                 <CommandDialog open={searchOpen} onOpenChange={setSearchOpen}>
-                  
                   <CommandInput placeholder="Search for People or Posts..." />
                   <CommandList>
                     <CommandEmpty>No results found.</CommandEmpty>
@@ -135,7 +133,6 @@ const SideNav = ({ user }: SideNavProps) => {
                     >
                       <Bell className="text-primary mr-2 text-2xl" />
                       <p>Notifications</p>
-                      <div className="h-4 w-4 rounded-full bg-primary absolute top-[1px] left-3 border-2 border-background"></div>
                     </Button>
                   </SheetClose>
                 </Link>

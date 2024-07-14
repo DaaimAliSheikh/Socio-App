@@ -19,7 +19,6 @@ enum RelationType {
 }
 
 enum NotificationType {
-  RECEIVED_FRIEND_REQUEST
   LIKED_POST
   LIKED_COMMENT
   COMMENTED_ON_POST
@@ -43,7 +42,7 @@ model User {
   receiver      FriendRequest[] @relation("receiver")
   owner         Notification[]  @relation("owner")
   associate     Notification[]  @relation("associate")
-  story         Story[]
+  story         Story?
 
   @@map("users")
 }
@@ -82,26 +81,27 @@ model Post {
   edited    Boolean  @default(false)
   author    User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
 
-  authorId    String
-  title       String
-  description String
-  imagePath   String?
-  likes       Int
-  comments    Comment[]
+  authorId     String
+  title        String
+  description  String
+  imagePaths   String[]
+  likes        Int            @default(0)
+  comments     Comment[]
+  notification Notification[]
 }
 
 model Story {
   id        String   @id @default(cuid())
   createdAt DateTime @default(now())
-  User      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String   @unique
   imagePath String
   expires   DateTime
 }
 
 model Comment {
   id        String   @id @default(cuid())
-  likes     Int
+  likes     Int      @default(0)
   content   String
   createdAt DateTime @default(now())
   edited    Boolean  @default(false)
@@ -112,6 +112,7 @@ model Comment {
 }
 
 model Relation {
+  id      String @id @default(cuid())
   userA   User   @relation("userA", fields: [userAId], references: [id], onDelete: Cascade)
   userAId String
   userB   User   @relation("userB", fields: [userBId], references: [id], onDelete: Cascade)
@@ -119,26 +120,28 @@ model Relation {
 
   type RelationType
 
-  @@id([userAId, userBId])
+  @@unique([userAId, userBId])
 }
 
 model FriendRequest {
+  id         String   @id @default(cuid())
   createdAt  DateTime @default(now())
   sender     User     @relation("sender", fields: [senderId], references: [id], onDelete: Cascade)
   senderId   String
   receiver   User     @relation("receiver", fields: [receiverId], references: [id], onDelete: Cascade)
   receiverId String
 
-  @@id([senderId, receiverId])
+  @@unique([senderId, receiverId])
 }
 
 model Notification {
+  id          String           @id @default(cuid())
   createdAt   DateTime         @default(now())
   owner       User             @relation("owner", fields: [ownerId], references: [id], onDelete: Cascade)
   ownerId     String
   associate   User             @relation("associate", fields: [associateId], references: [id], onDelete: Cascade)
   associateId String
   type        NotificationType
-
-  @@id([ownerId, associateId])
+  post        Post             @relation(fields: [postId], references: [id])
+  postId      String
 }

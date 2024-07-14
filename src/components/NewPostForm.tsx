@@ -14,6 +14,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "./ui/separator";
 import { X } from "lucide-react";
 import PublishPost from "@/actions/PublishPost";
+import { Post } from "@prisma/client";
 
 export interface PostFormInputs {
   title: string;
@@ -21,24 +22,7 @@ export interface PostFormInputs {
   media?: File[];
 }
 
-const onSubmit: SubmitHandler<PostFormInputs> = async (data) => {
-  const formData = new FormData();
-  Object.entries(data).forEach(([key, value]) => {
-    if (key === "media") {
-      value.forEach((file: File) => {
-        formData.append(file.name, file);
-      });
-    } else {
-      formData.append(key, value);
-    }
-  });
-
-  const result = await PublishPost(formData);
-  console.log(result);
-  ///to do, not send these links here t client but save them in the db on the server action
-};
-
-const NewPostForm = ({ post }: any) => {
+const NewPostForm = ({ userId, post }: { userId: string; post?: Post }) => {
   const {
     handleSubmit,
     register,
@@ -46,6 +30,21 @@ const NewPostForm = ({ post }: any) => {
     setValue,
     formState: { errors, isSubmitting },
   } = useForm<PostFormInputs>({ shouldUnregister: false });
+
+  const onSubmit: SubmitHandler<PostFormInputs> = async (data) => {
+    const formData = new FormData();
+    Object.entries(data).forEach(([key, value]) => {
+      if (key === "media") {
+        value.forEach((file: File) => {
+          formData.append(file.name, file);
+        });
+      } else {
+        formData.append(key, value);
+      }
+    });
+
+    const result = await PublishPost(formData, userId);
+  };
 
   useEffect(() => {
     register("media");

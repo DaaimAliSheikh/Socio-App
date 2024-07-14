@@ -11,41 +11,47 @@ import { Badge } from "./ui/badge";
 
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "./ui/separator";
-import { X } from "lucide-react";
+import { Loader2, X } from "lucide-react";
 import PublishStory from "@/actions/PublishStory";
+import { useToast } from "@/components/ui/use-toast";
+import { redirect, useRouter } from "next/navigation";
 
 export interface StoryFormInputs {
-  media?: File[];
+  media: File[];
 }
 
-const onSubmit: SubmitHandler<StoryFormInputs> = async (data) => {
-  const formData = new FormData();
-  Object.entries(data).forEach(([key, value]) => {
-    if (key === "media") {
-      value.forEach((file: File) => {
-        formData.append(file.name, file);
-      });
-    } else {
-      formData.append(key, value);
-    }
-  });
-
-  const result = await PublishStory(formData);
-  console.log(result);
-  ///to do, not send these links here t client but save them in the db on the server action
-};
-
-const NewStoryForm = () => {
+const NewStoryForm = ({ id }: { id: string }) => {
   const {
     handleSubmit,
     register,
     unregister,
     setValue,
-    formState: { errors, isSubmitting },
+    formState: { isSubmitting, errors },
   } = useForm<StoryFormInputs>({ shouldUnregister: false });
+  const { toast } = useToast();
+  const router = useRouter();
+
+  const onSubmit: SubmitHandler<StoryFormInputs> = async (data) => {
+    const formData = new FormData();
+    formData.append("media", data?.media[0]);
+
+    try {
+      await PublishStory(formData, id);
+      // window.location.reload();
+      router.refresh();
+    } catch (e) {
+      console.log(e);
+      toast({
+        duration: 3000,
+        variant: "destructive",
+        description:
+          "An error occured while uploading your story, please try again.",
+      });
+    }
+  };
 
   useEffect(() => {
-    register("media");
+    register("media", { required: "Please select a file" });
     return () => {
       unregister("media");
     };
@@ -137,8 +143,9 @@ const NewStoryForm = () => {
         <Button
           className="self-center text-foreground hover:bg-secondary"
           type="submit"
+          disabled={isSubmitting}
         >
-          Publish
+          Publish {isSubmitting && <Loader2 className=" ml-2 animate-spin" />}
         </Button>
       </form>
     </ScrollArea>

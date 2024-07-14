@@ -1,13 +1,8 @@
 "use server";
-import ImageKit from "imagekit";
+import { db } from "@/db/db";
+import imagekit from "@/lib/imagekit";
 
-const imagekit = new ImageKit({
-  publicKey: process.env.NEXT_PUBLIC_IMAGEKIT_PUBLIC_KEY!,
-  privateKey: process.env.NEXT_PRIVATE_IMAGEKIT_PRIVATE_KEY!,
-  urlEndpoint: process.env.IMAGEKIT_URL_ENDPOINT!,
-});
-
-const PublishPost = async (data: FormData) => {
+const PublishPost = async (data: FormData, id: string) => {
   const uploadPromises = Array.from(data.keys()).map(async (key) => {
     const value = data.get(key);
     if (value instanceof File) {
@@ -18,8 +13,17 @@ const PublishPost = async (data: FormData) => {
       });
     }
   });
-  if (uploadPromises)
-    return (await Promise.all(uploadPromises)).map((item) => item?.filePath);
+  const result = (await Promise.all(uploadPromises)).filter((item) => !!item);
+  await db.post.create({
+    data: {
+      title: data.get("title") as string,
+      description: data.get("description") as string,
+      imagePaths: result.map((item) => item.filePath),
+      author: {
+        connect: { id },
+      },
+    },
+  });
 };
 
 export default PublishPost;

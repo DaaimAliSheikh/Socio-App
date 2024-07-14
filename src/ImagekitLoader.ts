@@ -1,5 +1,3 @@
-import Image from "next/image";
-
 const imageKitLoader = ({
   src,
   width,
@@ -9,6 +7,12 @@ const imageKitLoader = ({
   width: string;
   quality: string;
 }) => {
+  ///for local images return the src as it, also next js recognizes it as a local image and applies the same optimizations as it does to normal local images
+  if (
+    !src.startsWith("/socio") 
+  )
+    return src;
+
   if (src[0] === "/") src = src.slice(1);
   const params = [`w-${width}`];
   if (quality) {

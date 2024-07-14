@@ -1,4 +1,9 @@
-function generateInitials(name: string): string {
+export default function generateInitials(
+  name: string | null | undefined
+): string {
+  if (!name) {
+    return "N/A";
+  }
   const names = name.trim().split(/\s+/);
 
   if (names.length < 2) {
