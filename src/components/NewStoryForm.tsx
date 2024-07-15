@@ -20,7 +20,7 @@ export interface StoryFormInputs {
   media: File[];
 }
 
-const NewStoryForm = ({ id }: { id: string }) => {
+const NewStoryForm = ({ userId }: { userId: string }) => {
   const {
     handleSubmit,
     register,
@@ -35,18 +35,19 @@ const NewStoryForm = ({ id }: { id: string }) => {
     const formData = new FormData();
     formData.append("media", data?.media[0]);
 
-    try {
-      await PublishStory(formData, id);
-      // window.location.reload();
-      router.refresh();
-    } catch (e) {
-      console.log(e);
+    const result = await PublishStory(formData, userId);
+    if (result?.error)
       toast({
         duration: 3000,
         variant: "destructive",
-        description:
-          "An error occured while uploading your story, please try again.",
+        description: result.error,
       });
+    else {
+      toast({
+        duration: 3000,
+        description: result.success,
+      });
+      router.refresh();
     }
   };
 

@@ -1,4 +1,7 @@
-import React from "react";
+"use client";
+import React, { useEffect } from "react";
+
+import { type CarouselApi } from "@/components/ui/carousel";
 
 import {
   Carousel,
@@ -9,16 +12,33 @@ import {
 } from "@/components/ui/carousel";
 import Image from "next/image";
 
-const ImageView = ({ images }: { images: string[] }) => {
+const ImageView = ({
+  imagePaths,
+  currentIndex = 0,
+}: {
+  imagePaths: string[];
+  currentIndex?: number;
+}) => {
+  const [api, setApi] = React.useState<CarouselApi>();
+
+  useEffect(() => {
+    if (!api) {
+      return;
+    }
+
+    api.on("init", () => {
+      api.scrollTo(currentIndex, true);
+    });
+  }, [api]);
   return (
-    <Carousel className=" w-[85%] mx-auto">
+    <Carousel setApi={setApi} className=" w-[85%] mx-auto">
       <CarouselContent>
-        {images.map((img: string) => {
+        {imagePaths.map((path: string) => {
           return (
             <CarouselItem className="w-full">
               <Image
                 alt="post image"
-                src={"https://github.com/shadcn.png"}
+                src={path}
                 height={200}
                 width={200}
                 sizes="100vw"
@@ -28,7 +48,7 @@ const ImageView = ({ images }: { images: string[] }) => {
           );
         })}
       </CarouselContent>
-      {images.length > 1 ? (
+      {imagePaths.length > 1 ? (
         <>
           <CarouselPrevious />
           <CarouselNext />

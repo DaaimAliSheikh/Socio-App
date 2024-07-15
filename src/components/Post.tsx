@@ -1,6 +1,6 @@
 "use client";
 import React, { useEffect, useRef, useState } from "react";
-import { Card, CardContent } from "./ui/card";
+import { Card } from "./ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Forward, Heart, MessageCircle, Pencil, Settings } from "lucide-react";
 import {
@@ -33,14 +33,19 @@ import NewPostForm from "./NewPostForm";
 import generateInitials from "@/lib/generateInitials";
 import { PostItem } from "@/lib/types";
 import getTimeAgo from "@/lib/getTimeAgo";
+import { User } from "@prisma/client";
+import { useRouter } from "next/navigation";
 
-
-const Post = ({ post }: { post: PostItem }) => {
+const Post = ({ post, user }: { post: PostItem; user: User }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [isOverflow, setIsOverflow] = useState(false);
   const [showComments, setShowComments] = useState(false);
-  const [open, setOpen] = useState(false);
+  const [editopen, setEditopen] = useState(false);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [imagesopen, setImagesopen] = useState(false);
+  const router = useRouter();
   const textContainerRef = useRef<HTMLElement>(null);
+
   useEffect(() => {
     if (textContainerRef.current) {
       setIsOverflow(
@@ -58,7 +63,10 @@ const Post = ({ post }: { post: PostItem }) => {
   return (
     <Card className={`p-2 `}>
       <div className="flex justify-between items-center">
-        <div className="flex  overflow-hidden">
+        <div
+          className="flex  overflow-hidden hover:cursor-pointer"
+          onClick={() => router.push(`/profile/${post.author.id}`)}
+        >
           <Avatar className=" m-2 h-10 w-10 border-1">
             <AvatarImage src={post.author.image || ""} />
             <AvatarFallback>
@@ -70,56 +78,68 @@ const Post = ({ post }: { post: PostItem }) => {
               " ml-2 flex flex-col w-[70%] md:w-[80%]  justify-center  leading-6"
             }
           >
-            <h2
-              className={
-                "justify-center text-lg font-bold overflow-hidden  text-ellipsis"
-              }
-            >
-              {post.author.name}
-            </h2>
+            <div className="flex ">
+              <h2
+                className={
+                  "justify-center text-md font-bold overflow-hidden  text-ellipsis"
+                }
+              >
+                {post.author.name}
+              </h2>
+              {post.edited ? (
+                <div className="text-muted-foreground flex items-center ml-2">
+                  <span className="w-[1px] h-3  bg-muted-foreground"></span>
+                  <p className="text-xs ml-2">edited</p>
+                </div>
+              ) : null}
+            </div>
 
             <p className="text-xs text-muted-foreground overflow-hidden  text-ellipsis">
               {getTimeAgo(post.createdAt)}
             </p>
           </div>
         </div>
+        {user.id == post.authorId ? (
+          <>
+            <DropdownMenu>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <DropdownMenuTrigger asChild>
+                      <Button
+                        variant={"ghost"}
+                        size={"icon"}
+                        className="mr-4 px-2 py-1 flex gap-2"
+                      >
+                        <Pencil size={18} className="text-muted-foreground" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Edit Post</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
 
-        <DropdownMenu>
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <DropdownMenuTrigger asChild>
-                  <Button
-                    variant={"ghost"}
-                    size={"icon"}
-                    className="mr-4 px-2 py-1 flex gap-2"
-                  >
-                    <Pencil size={18} className="text-muted-foreground" />
-                  </Button>
-                </DropdownMenuTrigger>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Edit Post</p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
+              <DropdownMenuContent className="w-14">
+                <DropdownMenuItem onClick={() => setEditopen(true)}>
+                  Edit
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem>Delete</DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
 
-          <DropdownMenuContent className="w-14">
-            <DropdownMenuItem onClick={() => setOpen(true)}>
-              Edit
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem>Delete</DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-        <Dialog open={open} onOpenChange={setOpen}>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Edit Post</DialogTitle>
-            </DialogHeader>
-            <NewPostForm post={post} />
-          </DialogContent>
-        </Dialog>
+            <Dialog open={editopen} onOpenChange={setEditopen}>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Edit Post</DialogTitle>
+                </DialogHeader>
+                <NewPostForm post={post} userId={user.id} />
+              </DialogContent>
+            </Dialog>
+          </>
+        ) : null}
       </div>
       <main
         ref={textContainerRef}
@@ -137,27 +157,50 @@ const Post = ({ post }: { post: PostItem }) => {
           </div>
         ) : null}
 
-        <p className="text-sm  ">{post.title}</p>
+        <p className="text-sm  ">{post.description}</p>
       </main>
       <main className="p-2">
-        <Dialog>
-          <DialogTrigger asChild>
-            <Image
-              alt="post image"
-              src={"/socio/COOL_OiXrrxaha.jpeg"}
-              height={200}
-              width={200}
-              sizes="100vw"
-              className="object-cover w-full rounded-md  hover:cursor-pointer"
-            ></Image>
-          </DialogTrigger>
+        <div className="grid grid-cols-2 grid-rows-2 gap-2 w-full">
+          {post.imagePaths.map((path, index: number) => {
+            return index <= 3 ? (
+              <div
+                className="relative"
+                onClick={() => {
+                  setCurrentIndex(index);
+                  setImagesopen(true);
+                }}
+              >
+                <Image
+                  alt="post image"
+                  src={path}
+                  height={200}
+                  width={200}
+                  sizes="100vw"
+                  className={`object-cover w-full rounded-md  hover:cursor-pointer ${
+                    index === 3 ? "opacity-50" : ""
+                  }`}
+                />
+                <p
+                  className={` ${
+                    index !== 3 ? "hidden" : ""
+                  } absolute bottom-1/2 right-1/2 translate-x-1/2 translate-y-1/2 text-2xl font-bold`}
+                >
+                  +{post.imagePaths.length - 3}
+                </p>
+              </div>
+            ) : null;
+          })}
+        </div>
+        <Dialog open={imagesopen} onOpenChange={setImagesopen}>
           <DialogContent className="w-[90%] max-w-[40rem] ">
             <DialogHeader>
               <DialogTitle>
                 <div className="flex text-start overflow-hidden">
                   <Avatar className=" m-2 h-10 w-10 border-1">
-                    <AvatarImage src="https://github.com/shadcn.png" />
-                    <AvatarFallback>CN</AvatarFallback>
+                    <AvatarImage src={post.author.image || ""} />
+                    <AvatarFallback>
+                      {generateInitials(post.author.name)}
+                    </AvatarFallback>
                   </Avatar>
                   <div
                     className={
@@ -169,18 +212,21 @@ const Post = ({ post }: { post: PostItem }) => {
                         "justify-center text-lg font-bold overflow-hidden  text-ellipsis"
                       }
                     >
-                      {post.user}
+                      {post.author.name}
                     </h2>
 
                     <p className="text-xs text-muted-foreground overflow-hidden  text-ellipsis">
-                      {post?.date}
+                      {getTimeAgo(post.createdAt)}
                     </p>
                   </div>
                 </div>
               </DialogTitle>
             </DialogHeader>
 
-            <ImageView images={post.img} />
+            <ImageView
+              imagePaths={post.imagePaths}
+              currentIndex={currentIndex}
+            />
           </DialogContent>
         </Dialog>
       </main>
@@ -190,7 +236,7 @@ const Post = ({ post }: { post: PostItem }) => {
             <TooltipTrigger asChild>
               <Button variant={"ghost"}>
                 <Heart size={20} />
-                <p className="p-1">2</p>
+                <p className="p-1">{post.likes > 0 ? post.likes : null}</p>
               </Button>
             </TooltipTrigger>
             <TooltipContent>
@@ -224,7 +270,7 @@ const Post = ({ post }: { post: PostItem }) => {
           </Tooltip>
         </TooltipProvider>
       </div>
-      {showComments && <CommentSection />}
+      {showComments && <CommentSection user={user} post={post} />}
     </Card>
   );
 };

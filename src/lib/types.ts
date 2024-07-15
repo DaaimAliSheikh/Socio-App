@@ -48,8 +48,23 @@ export type PostItem = {
   createdAt: Date;
   edited: boolean;
   authorId: string;
-  title: string;
   description: string;
   imagePaths: string[];
   likes: number;
+};
+
+export type CommentItem = {
+  author: {
+    id: string;
+    name: string | null;
+    image: string | null;
+  };
+} & {
+  id: string;
+  likes: number;
+  content: string;
+  createdAt: Date;
+  edited: boolean;
+  authorId: string;
+  postId: string;
 };

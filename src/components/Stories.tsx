@@ -64,7 +64,7 @@ const Stories = ({ user, stories }: { user: User; stories: StoryItem[] }) => {
                       Show your friends what you are up to!
                     </DialogDescription>
                   </DialogHeader>
-                  <NewStoryForm id={user.id} />
+                  <NewStoryForm userId={user.id} />
                 </DialogContent>
               </Dialog>
             )}

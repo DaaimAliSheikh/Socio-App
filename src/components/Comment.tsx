@@ -24,22 +24,13 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Heart, Pencil } from "lucide-react";
-import { Input } from "./ui/input";
 import { Textarea } from "./ui/textarea";
+import { CommentItem } from "@/lib/types";
+import generateInitials from "@/lib/generateInitials";
+import getTimeAgo from "@/lib/getTimeAgo";
+import { User } from "@prisma/client";
 
-const Comment = ({
-  comment,
-}: {
-  comment: {
-    author: string;
-    image: string;
-    date: string;
-    content: string;
-    parent: string;
-    likes: number;
-    edited: boolean;
-  };
-}) => {
+const Comment = ({ comment, user }: { comment: CommentItem; user: User }) => {
   const [isOverflow, setIsOverflow] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
   const [open, setOpen] = useState(false);
@@ -63,8 +54,10 @@ const Comment = ({
     <div className="flex my-6 w-full  justify-between items-center">
       <div className={`flex border-primary border-l-4 pl-2`}>
         <Avatar className=" mx-2 mt-1 self-start h-8 w-8 border-1">
-          <AvatarImage src="https://github.com/shadcn.png" />
-          <AvatarFallback>CN</AvatarFallback>
+          <AvatarImage src={comment.author.image || ""} />
+          <AvatarFallback>
+            {generateInitials(comment.author.name)}
+          </AvatarFallback>
         </Avatar>
         <div
           className={
@@ -76,7 +69,7 @@ const Comment = ({
               "justify-center text-sm font-bold overflow-hidden  text-ellipsis"
             }
           >
-            {comment.author}
+            {comment.author.name}
           </h2>
 
           <main
@@ -103,60 +96,63 @@ const Comment = ({
               <Heart size={16} className="" /> {comment.likes}
             </p>
             <p className="h-full w-[2px] bg-secondary"></p>
-            <p>{comment?.date}</p>
+            <p>{getTimeAgo(comment.createdAt)}</p>
           </div>
         </div>
       </div>
+      {comment.author.id === user.id ? (
+        <>
+          <DropdownMenu>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant={"ghost"}
+                      size={"icon"}
+                      className="mr-4 px-2 py-1 flex gap-2"
+                    >
+                      <Pencil size={16} />
+                    </Button>
+                  </DropdownMenuTrigger>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Edit Comment</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
 
-      <DropdownMenu>
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant={"ghost"}
-                  size={"icon"}
-                  className="mr-4 px-2 py-1 flex gap-2"
-                >
-                  <Pencil size={16} />
-                </Button>
-              </DropdownMenuTrigger>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>Edit Comment</p>
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
+            <DropdownMenuContent className="w-14">
+              <DropdownMenuItem onClick={() => setOpen(true)}>
+                Edit
+              </DropdownMenuItem>
 
-        <DropdownMenuContent className="w-14">
-          <DropdownMenuItem onClick={() => setOpen(true)}>
-            Edit
-          </DropdownMenuItem>
-
-          <DropdownMenuSeparator />
-          <DropdownMenuItem>Delete</DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
-      <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Edit your comment</DialogTitle>
-          </DialogHeader>
-          <div className="flex gap-x-3 items-center">
-            <Avatar className="h-8 w-8">
-              <AvatarImage src="https://github.com/shadcn.png" />
-              <AvatarFallback>CN</AvatarFallback>
-            </Avatar>
-            <Textarea
-              className="h-[2rem] resize-none"
-              placeholder="Add a comment..."
-            ></Textarea>
-          </div>
-          <Button className="w-fit mx-auto" size={"sm"} type="submit">
-            Save Changes
-          </Button>
-        </DialogContent>
-      </Dialog>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem>Delete</DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+          <Dialog open={open} onOpenChange={setOpen}>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Edit your comment</DialogTitle>
+              </DialogHeader>
+              <div className="flex gap-x-3 items-center">
+                <Avatar className="h-8 w-8">
+                  <AvatarImage src="https://github.com/shadcn.png" />
+                  <AvatarFallback>CN</AvatarFallback>
+                </Avatar>
+                <Textarea
+                  className="h-[2rem] resize-none"
+                  placeholder="Add a comment..."
+                ></Textarea>
+              </div>
+              <Button className="w-fit mx-auto" size={"sm"} type="submit">
+                Save Changes
+              </Button>
+            </DialogContent>
+          </Dialog>
+        </>
+      ) : null}
     </div>
   );
 };

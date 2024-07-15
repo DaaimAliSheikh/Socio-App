@@ -14,6 +14,9 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "./ui/separator";
 import { X } from "lucide-react";
 import EditProfile from "@/actions/EditProfile";
+import { useRouter } from "next/navigation";
+import { useToast } from "./ui/use-toast";
+import { User } from "@prisma/client";
 
 export interface EditProfileFormInputs {
   name: string;
@@ -22,31 +25,49 @@ export interface EditProfileFormInputs {
   coverImage?: File[];
 }
 
-const onSubmit: SubmitHandler<EditProfileFormInputs> = async (data) => {
-  const formData = new FormData();
-  Object.entries(data).forEach(([key, value]) => {
-    if (key === "media") {
-      value.forEach((file: File) => {
-        formData.append(file.name, file);
-      });
-    } else {
-      formData.append(key, value);
-    }
-  });
-
-  const result = await EditProfile(formData);
-  console.log(result);
-  ///to do, not send these links here t client but save them in the db on the server action
-};
-
-const EditProfileForm = () => {
+const EditProfileForm = ({ user }: { user: User }) => {
   const {
     handleSubmit,
     register,
     unregister,
     setValue,
     formState: { errors, isSubmitting },
-  } = useForm<EditProfileFormInputs>({ shouldUnregister: false });
+  } = useForm<EditProfileFormInputs>({
+    shouldUnregister: false,
+    defaultValues: { name: user.name || "", bio: user.bio || "" },
+  });
+
+  const router = useRouter();
+  const { toast } = useToast();
+
+  const onSubmit: SubmitHandler<EditProfileFormInputs> = async (data) => {
+    const formData = new FormData();
+    formData.append("name", data.name);
+    formData.append("bio", data.bio);
+
+    ///if no files are selected, image arrays are undefined, not empty arrays
+    if (data.profileImage) {
+      formData.append("profileImage", data.profileImage[0]);
+    }
+    if (data.coverImage) {
+      formData.append("coverImage", data.coverImage[0]);
+    }
+
+    const result = await EditProfile(formData, user.id);
+    if (result?.error)
+      toast({
+        duration: 3000,
+        variant: "destructive",
+        description: result.error,
+      });
+    else {
+      toast({
+        duration: 3000,
+        description: result.success,
+      });
+      router.refresh();
+    }
+  };
 
   useEffect(() => {
     register("profileImage");
@@ -181,7 +202,7 @@ const EditProfileForm = () => {
         >
           <input id="profileImage" {...getProfileInputProps()} />
           <p className="text-center">
-            Drag 'n' drop your file here, or click to upload
+            Drag 'n' drop your file here, or click to upload a new profile image
           </p>
         </div>
         <ul className="flex flex-wrap items-center gap-2 ">
@@ -224,7 +245,7 @@ const EditProfileForm = () => {
         >
           <input id="coverImage" {...getCoverInputProps()} />
           <p className="text-center">
-            Drag 'n' drop your file here, or click to upload
+            Drag 'n' drop your file here, or click to upload a new cover image
           </p>
         </div>
         <ul className="flex flex-wrap items-center gap-2 ">

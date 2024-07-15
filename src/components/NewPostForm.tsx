@@ -12,12 +12,15 @@ import { Badge } from "./ui/badge";
 
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "./ui/separator";
-import { X } from "lucide-react";
+import { Loader2, X } from "lucide-react";
 import PublishPost from "@/actions/PublishPost";
 import { Post } from "@prisma/client";
+import { useRouter } from "next/navigation";
+import { useToast } from "./ui/use-toast";
+import updatePost from "@/actions/updatePost";
+import Image from "next/image";
 
 export interface PostFormInputs {
-  title: string;
   description: string;
   media?: File[];
 }
@@ -29,12 +32,20 @@ const NewPostForm = ({ userId, post }: { userId: string; post?: Post }) => {
     unregister,
     setValue,
     formState: { errors, isSubmitting },
-  } = useForm<PostFormInputs>({ shouldUnregister: false });
+  } = useForm<PostFormInputs>({
+    shouldUnregister: false,
+    defaultValues: {
+      description: post?.description || "",
+      media: [],
+    },
+  });
+  const router = useRouter();
+  const { toast } = useToast();
 
   const onSubmit: SubmitHandler<PostFormInputs> = async (data) => {
     const formData = new FormData();
     Object.entries(data).forEach(([key, value]) => {
-      if (key === "media") {
+      if (key === "media" && value) {
         value.forEach((file: File) => {
           formData.append(file.name, file);
         });
@@ -42,8 +53,22 @@ const NewPostForm = ({ userId, post }: { userId: string; post?: Post }) => {
         formData.append(key, value);
       }
     });
-
-    const result = await PublishPost(formData, userId);
+    const result = post
+      ? await updatePost(formData, post.id)
+      : await PublishPost(formData, userId);
+    if (result?.error)
+      toast({
+        duration: 3000,
+        variant: "destructive",
+        description: result.error,
+      });
+    else {
+      toast({
+        duration: 3000,
+        description: result.success,
+      });
+      router.refresh();
+    }
   };
 
   useEffect(() => {
@@ -93,18 +118,6 @@ const NewPostForm = ({ userId, post }: { userId: string; post?: Post }) => {
         onSubmit={handleSubmit(onSubmit)}
         className="flex flex-col w-full ml-1 space-y-4 text-sm"
       >
-        <div className="grid w-full max-w-sm items-center gap-1.5">
-          <Label htmlFor="title">Post Title*</Label>
-          <Input
-            {...register("title", {
-              required: "Post Title is required",
-            })}
-            id="title"
-            placeholder={post?.title || "This is my cool post's title!"}
-            className="h-[2rem] mt-1"
-          />
-          <p className="text-red-500">{errors.title?.message as string}</p>
-        </div>
         <div className="grid    w-full max-w-sm items-center gap-1.5">
           <Label htmlFor="description">Post Description*</Label>
           <Textarea
@@ -146,18 +159,25 @@ const NewPostForm = ({ userId, post }: { userId: string; post?: Post }) => {
           )}
           {acceptedFiles.map((file) => (
             <li key={file.name}>
-              <Badge variant="outline">
-                {file.name}
+              <div className="relative">
+                <Image
+                  alt="post images"
+                  sizes="100vw"
+                  src={URL.createObjectURL(file)}
+                  height={100}
+                  width={100}
+                  className="w-20 h-20 object-cover rounded-md"
+                />
                 <Button
                   type="button"
-                  variant={"ghost"}
+                  variant={"outline"}
                   size={"icon"}
-                  className="p-0 rounded-full w-6 h-6 ml-2"
+                  className="p-0 absolute top-1 right-1 rounded-full w-5 h-5 ml-2"
                   onClick={removeFile(file)}
                 >
                   <X size={17} />
                 </Button>
-              </Badge>
+              </div>
             </li>
           ))}
         </ul>
@@ -172,8 +192,10 @@ const NewPostForm = ({ userId, post }: { userId: string; post?: Post }) => {
         <Button
           className="self-center text-foreground hover:bg-secondary"
           type="submit"
+          disabled={isSubmitting}
         >
           {post ? "Save Changes" : "Publish"}
+          {isSubmitting ? <Loader2 className="animate-spin ml-2" /> : null}
         </Button>
       </form>
     </ScrollArea>
