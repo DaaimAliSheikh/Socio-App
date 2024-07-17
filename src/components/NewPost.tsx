@@ -17,7 +17,7 @@ const NewPost = ({ user }: { user: User }) => {
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Card className="flex shadow-sm hover:cursor-pointer items-center my-2 w-full group p-2 hover:bg-secondary ">
+        <Card className="flex shadow-sm hover:cursor-pointer items-center mb-4 mt-2 w-full group p-2 hover:bg-secondary ">
           <Avatar className="mr-4 group-hover:border-2 group-hover:border-foreground">
             <AvatarImage src={user?.image || ""} />
             <AvatarFallback>{generateInitials(user?.name)}</AvatarFallback>

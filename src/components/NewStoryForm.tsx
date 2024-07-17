@@ -15,6 +15,7 @@ import { Loader2, X } from "lucide-react";
 import PublishStory from "@/actions/PublishStory";
 import { useToast } from "@/components/ui/use-toast";
 import { redirect, useRouter } from "next/navigation";
+import Image from "next/image";
 
 export interface StoryFormInputs {
   media: File[];
@@ -112,24 +113,32 @@ const NewStoryForm = ({ userId }: { userId: string }) => {
             <span className="font-bold">(Max 1)</span>
           </p>
         </div>
+        <p className="p-1 text-red-500 mx-auto">{errors?.media?.message}</p>
         <ul className="flex flex-wrap items-center gap-2 ">
           {acceptedFiles.length > 0 && (
             <p className=" text-nowrap">Selected Files:</p>
           )}
           {acceptedFiles.map((file) => (
             <li key={file.name}>
-              <Badge variant="outline">
-                {file.name}
+              <div className="relative">
+                <Image
+                  alt="post images"
+                  sizes="100vw"
+                  src={URL.createObjectURL(file)}
+                  height={100}
+                  width={100}
+                  className="w-20 h-20 object-cover rounded-md"
+                />
                 <Button
                   type="button"
-                  variant={"ghost"}
+                  variant={"outline"}
                   size={"icon"}
-                  className="p-0 rounded-full w-6 h-6 ml-2"
+                  className="p-0 absolute top-1 right-1 rounded-full w-5 h-5 ml-2"
                   onClick={removeFile(file)}
                 >
                   <X size={17} />
                 </Button>
-              </Badge>
+              </div>
             </li>
           ))}
         </ul>

@@ -22,6 +22,7 @@ import { User } from "@prisma/client";
 import Image from "next/image";
 import { redirect, useRouter } from "next/navigation";
 import { Card } from "./ui/card";
+import { useToast } from "./ui/use-toast";
 
 const viewDurationSeconds = 6;
 
@@ -42,6 +43,7 @@ export function StoryView({
   const [toggle, setToggle] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const router = useRouter();
+  const { toast } = useToast();
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -110,6 +112,10 @@ export function StoryView({
                       await deleteStory(story.id);
                       router.refresh();
                       setIsDeleting(false);
+                      toast({
+                        duration: 3000,
+                        description: "Story deleted successfully",
+                      });
                     }}
                   >
                     {isDeleting ? (
@@ -132,7 +138,7 @@ export function StoryView({
           </CarouselItem>
         ))}
       </CarouselContent>
-      <Progress value={progressValue} />
+      <Progress className="w-[98%] mt-1 mx-auto" value={progressValue} />
 
       <CarouselPrevious />
       <CarouselNext />

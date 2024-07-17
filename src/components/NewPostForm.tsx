@@ -116,12 +116,12 @@ const NewPostForm = ({ userId, post }: { userId: string; post?: Post }) => {
     <ScrollArea className="w-full h-[80vh]">
       <form
         onSubmit={handleSubmit(onSubmit)}
-        className="flex flex-col w-full ml-1 space-y-4 text-sm"
+        className="flex flex-col w-[95%]  ml-1 space-y-4 text-sm"
       >
-        <div className="grid    w-full max-w-sm items-center gap-1.5">
+        <div className="grid    w-full  items-center gap-1.5">
           <Label htmlFor="description">Post Description*</Label>
           <Textarea
-            className="resize-none mt-1"
+            className="resize-none  mt-1 w-full"
             {...register("description", {
               required: "Post Description is required",
             })}
@@ -140,7 +140,7 @@ const NewPostForm = ({ userId, post }: { userId: string; post?: Post }) => {
         <div
           {...getRootProps({
             className:
-              "dropzone w-[95%] border-dashed border p-10 flex justify-center items-center hover:cursor-pointer hover:bg-secondary hover:border-foreground",
+              "dropzone w-full border-dashed border p-10 flex justify-center items-center hover:cursor-pointer hover:bg-secondary hover:border-foreground",
           })}
         >
           <input id="media" {...getInputProps()} />

@@ -2,7 +2,7 @@
 
 import { db } from "@/db/db";
 
-const getPosts = async (userId: string) => {
+const getPostsByUserId = async (userId: string) => {
   return await db.post.findMany({
     where: {
       OR: [
@@ -27,6 +27,7 @@ const getPosts = async (userId: string) => {
         },
       ],
     },
+    orderBy: { createdAt: "desc" },
     include: {
       author: { select: { id: true, name: true, image: true } },
       comments: true,
@@ -34,4 +35,4 @@ const getPosts = async (userId: string) => {
   });
 };
 
-export default getPosts;
+export default getPostsByUserId;

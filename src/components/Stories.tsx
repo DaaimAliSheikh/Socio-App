@@ -29,11 +29,10 @@ import Image from "next/image";
 const Stories = ({ user, stories }: { user: User; stories: StoryItem[] }) => {
   return (
     <>
-      <Card className=" w-full my-4 shadow-sm py-2 border rounded-lg">
+      <Card className=" w-full mb-4 shadow-sm py-2 border rounded-lg">
         <Carousel className="w-[82%]  mx-auto">
           <CarouselContent>
             {/* add story */}
-
             {stories[0]?.user.id === user.id || (
               <Dialog>
                 <DialogTrigger asChild>
@@ -68,8 +67,7 @@ const Stories = ({ user, stories }: { user: User; stories: StoryItem[] }) => {
                 </DialogContent>
               </Dialog>
             )}
-
-            {/* user's own story */}
+            {/* return*/}
 
             {/* friend's stories */}
             {stories.map((story, index) => {
@@ -88,7 +86,13 @@ const Stories = ({ user, stories }: { user: User; stories: StoryItem[] }) => {
                             fill
                             src={story.imagePath || ""}
                           ></Image>
+                          {index === 0 && stories[0]?.user.id === user.id ? (
+                            <div className="bg-primary w-full rounded-b-sm absolute top-3/4 h-[25%] flex items-start justify-center font-bold text-sm text-foreground">
+                              <p className="pt-3 text-xs">your story</p>
+                            </div>
+                          ) : null}
                         </div>
+
                         <Avatar className="absolute top-0 w-10 h-10 ml-2 mt-2 border-2">
                           <AvatarImage src={story.user.image || ""} />
                           <AvatarFallback>
@@ -97,7 +101,7 @@ const Stories = ({ user, stories }: { user: User; stories: StoryItem[] }) => {
                         </Avatar>
                       </CarouselItem>
                     </DialogTrigger>
-                    <DialogContent className="flex w-[90%] max-w-[50rem] border-none flex-col items-center justify-center  bg-transparent ">
+                    <DialogContent className="flex w-[90%] max-w-[40rem] border-none flex-col items-center justify-center  ">
                       <DialogHeader>
                         <DialogTitle className="flex w-full -ml-8 items-center ">
                           Stories

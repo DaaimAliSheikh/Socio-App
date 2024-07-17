@@ -4,7 +4,7 @@ import Stories from "@/components/Stories";
 import NewPost from "@/components/NewPost";
 import PostList from "@/components/PostList";
 import getStories from "@/actions/getStories";
-import getPosts from "@/actions/getPosts";
+import getPostsByUserId from "@/actions/getPostsByUserId";
 
 import noPostsSvg from "../../public/no-posts.svg";
 import Image from "next/image";
@@ -14,7 +14,7 @@ const HomePage = async () => {
   const user = await getUserById(session?.user?.id);
   if (!user) return null;
   const stories = await getStories(user.id);
-  const posts = await getPosts(user.id);
+  const posts = await getPostsByUserId(user.id);
   return (
     <div className="flex-grow flex flex-col items-center max-w-[50rem] mx-auto w-[90%]  mt-2">
       <NewPost user={user} />

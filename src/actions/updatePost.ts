@@ -33,19 +33,24 @@ const updatePost = async (data: FormData, postId: string) => {
         where: { id: postId },
         select: { imagePaths: true },
       });
-      const deletePromises = post?.imagePaths.map(async (path) => {
-        const files = await imagekit.listFiles({ path: "/socio/" });
-        const fileId = files.find((f) => {
-          return f.filePath === path;
-        })?.fileId as string;
-        return imagekit.deleteFile(fileId);
-      });
-      if (deletePromises) await Promise.all(deletePromises);
+
+      try {
+        const deletePromises = post?.imagePaths.map(async (path) => {
+          const files = await imagekit.listFiles({ path: "/socio/" });
+          const fileId = files.find((f) => {
+            return f.filePath === path;
+          })?.fileId as string;
+          return imagekit.deleteFile(fileId);
+        });
+        if (deletePromises) await Promise.all(deletePromises);
+      } catch (e) {
+        console.log(e);
+      }
 
       //upload new images to imagekit
       const result = await Promise.all(uploadPromises);
 
-      //update new image paths in db
+      //update post in db
       await db.post.update({
         where: { id: postId },
         data: {
@@ -56,10 +61,10 @@ const updatePost = async (data: FormData, postId: string) => {
       });
     }
 
-    return { success: "Post successfully uploaded" };
+    return { success: "Post successfully updated" };
   } catch (e) {
     console.log(e);
-    return { error: "Error while uploading post. Please try again." };
+    return { error: "Error while updating post. Please try again." };
   }
 };
 

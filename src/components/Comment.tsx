@@ -29,11 +29,36 @@ import { CommentItem } from "@/lib/types";
 import generateInitials from "@/lib/generateInitials";
 import getTimeAgo from "@/lib/getTimeAgo";
 import { User } from "@prisma/client";
+import deleteComment from "@/actions/deleteComment";
+import { useToast } from "./ui/use-toast";
+import changeCommentLikes from "@/actions/changeCommentLikes";
+import checkCommentLiked from "@/actions/checkCommentLiked";
+import { useForm } from "react-hook-form";
+import updateComment from "@/actions/updateComment";
 
-const Comment = ({ comment, user }: { comment: CommentItem; user: User }) => {
+const Comment = ({
+  comment,
+  user,
+  setComments,
+}: {
+  comment: CommentItem;
+  user: User;
+  setComments: React.Dispatch<React.SetStateAction<CommentItem[]>>;
+}) => {
   const [isOverflow, setIsOverflow] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
   const [open, setOpen] = useState(false);
+  const [liked, setLiked] = useState(false);
+  const { toast } = useToast();
+
+  const {
+    register,
+    handleSubmit,
+    formState: { isSubmitting, errors },
+  } = useForm<{ content: string }>({
+    defaultValues: { content: comment.content },
+  });
+
   const textContainerRef = useRef<HTMLElement>(null);
   useEffect(() => {
     if (textContainerRef.current) {
@@ -48,11 +73,14 @@ const Comment = ({ comment, user }: { comment: CommentItem; user: User }) => {
         )
       );
     }
+    (async () => setLiked(await checkCommentLiked(comment.id, user.id)))();
   }, []);
 
   return (
-    <div className="flex my-6 w-full  justify-between items-center">
-      <div className={`flex border-primary border-l-4 pl-2`}>
+    <div className="flex my-6 w-full gap-2  justify-between items-center">
+      <div
+        className={`flex border-primary border-l-4 pl-2 overflow-hidden w-full`}
+      >
         <Avatar className=" mx-2 mt-1 self-start h-8 w-8 border-1">
           <AvatarImage src={comment.author.image || ""} />
           <AvatarFallback>
@@ -61,22 +89,30 @@ const Comment = ({ comment, user }: { comment: CommentItem; user: User }) => {
         </Avatar>
         <div
           className={
-            " ml-1 flex flex-col w-[70%] md:w-[80%]  justify-center  leading-6"
+            " ml-1 flex flex-col w-full  justify-center  overflow-hidden  leading-6"
           }
         >
-          <h2
-            className={
-              "justify-center text-sm font-bold overflow-hidden  text-ellipsis"
-            }
-          >
-            {comment.author.name}
-          </h2>
+          <div className="flex w-fit justify-between items-center gap-2">
+            <h2
+              className={
+                "justify-center text-sm font-bold overflow-hidden  text-ellipsis"
+              }
+            >
+              {comment.author.name}
+            </h2>
+            {comment.edited && (
+              <>
+                <p className="h-[14px] w-[2px] bg-secondary"></p>
+                <p className="text-xs text-muted-foreground">edited</p>
+              </>
+            )}
+          </div>
 
           <main
             ref={textContainerRef}
             className={`${
               isExpanded ? "" : "overflow-hidden h-[3.8rem]"
-            } flex mx-2 relative hover:cursor-pointer my-2 w-full`}
+            } flex relative hover:cursor-pointer  my-2 w-full`}
             onClick={() => isOverflow && setIsExpanded(!isExpanded)}
           >
             {!isExpanded ? (
@@ -92,43 +128,71 @@ const Comment = ({ comment, user }: { comment: CommentItem; user: User }) => {
           </main>
 
           <div className="text-xs text-foreground  flex gap-4 my-2 ">
-            <p className=" flex gap-1 items-center  hover:text-muted-foreground hover:cursor-pointer">
-              <Heart size={16} className="" /> {comment.likes}
+            <p
+              onClick={async () => {
+                liked ? comment.likes-- : comment.likes++;
+                setLiked((prev) => !prev);
+
+                try {
+                  liked
+                    ? await changeCommentLikes(comment.id, user.id, false)
+                    : await changeCommentLikes(comment.id, user.id, true);
+                } catch {
+                  liked ? comment.likes-- : comment.likes++;
+                  setLiked((prev) => !prev);
+                }
+              }}
+              className=" flex gap-1 items-center  hover:text-muted-foreground hover:cursor-pointer"
+            >
+              {liked ? (
+                <Heart size={16} className="text-primary fill-primary" />
+              ) : (
+                <Heart size={16} className="" />
+              )}
+              {comment.likes > 0 ? comment.likes : null}
             </p>
             <p className="h-full w-[2px] bg-secondary"></p>
             <p>{getTimeAgo(comment.createdAt)}</p>
           </div>
         </div>
       </div>
-      {comment.author.id === user.id ? (
+      {comment.author.id === user.id || comment.post.author.id === user.id ? (
         <>
           <DropdownMenu>
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <DropdownMenuTrigger asChild>
-                    <Button
-                      variant={"ghost"}
-                      size={"icon"}
-                      className="mr-4 px-2 py-1 flex gap-2"
-                    >
-                      <Pencil size={16} />
-                    </Button>
-                  </DropdownMenuTrigger>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>Edit Comment</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant={"ghost"}
+                size={"icon"}
+                className="mr-4 px-2 py-1 flex gap-2 "
+              >
+                <Pencil size={16} />
+              </Button>
+            </DropdownMenuTrigger>
 
             <DropdownMenuContent className="w-14">
-              <DropdownMenuItem onClick={() => setOpen(true)}>
-                Edit
-              </DropdownMenuItem>
+              {comment.author.id === user.id && (
+                <>
+                  <DropdownMenuItem onClick={() => setOpen(true)}>
+                    Edit
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                </>
+              )}
 
-              <DropdownMenuSeparator />
-              <DropdownMenuItem>Delete</DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => {
+                  deleteComment(comment.id);
+                  setComments((prev) =>
+                    prev.filter((c) => c.id !== comment.id)
+                  );
+                  toast({
+                    duration: 3000,
+                    description: "Comment deleted successfully",
+                  });
+                }}
+              >
+                Delete
+              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
           <Dialog open={open} onOpenChange={setOpen}>
@@ -136,19 +200,52 @@ const Comment = ({ comment, user }: { comment: CommentItem; user: User }) => {
               <DialogHeader>
                 <DialogTitle>Edit your comment</DialogTitle>
               </DialogHeader>
-              <div className="flex gap-x-3 items-center">
-                <Avatar className="h-8 w-8">
-                  <AvatarImage src="https://github.com/shadcn.png" />
-                  <AvatarFallback>CN</AvatarFallback>
-                </Avatar>
-                <Textarea
-                  className="h-[2rem] resize-none"
-                  placeholder="Add a comment..."
-                ></Textarea>
-              </div>
-              <Button className="w-fit mx-auto" size={"sm"} type="submit">
-                Save Changes
-              </Button>
+              <form
+                onSubmit={handleSubmit(async (data) => {
+                  await updateComment(comment.id, data.content);
+                  setComments((prev) => {
+                    return prev.map((c) => {
+                      if (c.id === comment.id) {
+                        return {
+                          ...c,
+                          content: data.content,
+                          edited: true,
+                        };
+                      }
+                      return c;
+                    });
+                  });
+                  setOpen(false);
+                  toast({
+                    duration: 3000,
+                    description: "Comment updated successfully",
+                  });
+                })}
+                className="w-full flex flex-col"
+              >
+                <div className="flex  gap-x-3 items-center">
+                  <Avatar className="h-8 w-8 self-start mt-1">
+                    <AvatarImage src={user?.image || ""} />
+                    <AvatarFallback>
+                      {generateInitials(user?.name)}
+                    </AvatarFallback>
+                  </Avatar>
+
+                  <Textarea
+                    {...register("content", {
+                      required: "comment cannot be empty",
+                    })}
+                    className="h-[2rem] resize-none"
+                    placeholder="Add a comment..."
+                  ></Textarea>
+                </div>
+                <Button className="mt-4 mx-auto" size={"sm"} type="submit">
+                  Save Changes
+                </Button>
+                <p className="text-red-500 text-sm mx-auto p-2">
+                  {errors.content?.message}
+                </p>
+              </form>
             </DialogContent>
           </Dialog>
         </>

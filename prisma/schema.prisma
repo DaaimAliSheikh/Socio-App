@@ -43,6 +43,8 @@ model User {
   owner         Notification[]  @relation("owner")
   associate     Notification[]  @relation("associate")
   story         Story?
+  commentlikes  CommentLikes[]
+  postlikes     PostLikes[]
 
   @@map("users")
 }
@@ -87,6 +89,7 @@ model Post {
   likes        Int            @default(0)
   comments     Comment[]
   notification Notification[]
+  PostLikes    PostLikes[]
 }
 
 model Story {
@@ -99,15 +102,16 @@ model Story {
 }
 
 model Comment {
-  id        String   @id @default(cuid())
-  likes     Int      @default(0)
-  content   String
-  createdAt DateTime @default(now())
-  edited    Boolean  @default(false)
-  author    User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
-  authorId  String
-  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
-  postId    String
+  id           String         @id @default(cuid())
+  likes        Int            @default(0)
+  content      String
+  createdAt    DateTime       @default(now())
+  edited       Boolean        @default(false)
+  author       User           @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  authorId     String
+  post         Post           @relation(fields: [postId], references: [id], onDelete: Cascade)
+  postId       String
+  CommentLikes CommentLikes[]
 }
 
 model Relation {
@@ -143,4 +147,24 @@ model Notification {
   type        NotificationType
   post        Post             @relation(fields: [postId], references: [id])
   postId      String
+}
+
+model CommentLikes {
+  id        String  @id @default(cuid())
+  comment   Comment @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  commentId String  
+  user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String  
+
+  @@unique([commentId, userId])
+}
+
+model PostLikes {
+  id     String @id @default(cuid())
+  post   Post   @relation(fields: [postId], references: [id], onDelete: Cascade)
+  postId String 
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String 
+
+  @@unique([postId, userId])
 }

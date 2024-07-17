@@ -35,6 +35,9 @@ import { PostItem } from "@/lib/types";
 import getTimeAgo from "@/lib/getTimeAgo";
 import { User } from "@prisma/client";
 import { useRouter } from "next/navigation";
+import { useToast } from "./ui/use-toast";
+import changePostLikes from "@/actions/changePostLikes";
+import checkPostLiked from "@/actions/checkPostLiked";
 
 const Post = ({ post, user }: { post: PostItem; user: User }) => {
   const [isExpanded, setIsExpanded] = useState(false);
@@ -45,6 +48,8 @@ const Post = ({ post, user }: { post: PostItem; user: User }) => {
   const [imagesopen, setImagesopen] = useState(false);
   const router = useRouter();
   const textContainerRef = useRef<HTMLElement>(null);
+  const [liked, setLiked] = useState(false);
+  const { toast } = useToast();
 
   useEffect(() => {
     if (textContainerRef.current) {
@@ -59,9 +64,10 @@ const Post = ({ post, user }: { post: PostItem; user: User }) => {
         )
       );
     }
+    (async () => setLiked(await checkPostLiked(post.id, user.id)))();
   }, []);
   return (
-    <Card className={`p-2 `}>
+    <Card className={`p-2 mb-4`}>
       <div className="flex justify-between items-center">
         <div
           className="flex  overflow-hidden hover:cursor-pointer"
@@ -88,7 +94,7 @@ const Post = ({ post, user }: { post: PostItem; user: User }) => {
               </h2>
               {post.edited ? (
                 <div className="text-muted-foreground flex items-center ml-2">
-                  <span className="w-[1px] h-3  bg-muted-foreground"></span>
+                  <p className="h-[14px] w-[2px] bg-secondary"></p>
                   <p className="text-xs ml-2">edited</p>
                 </div>
               ) : null}
@@ -160,11 +166,23 @@ const Post = ({ post, user }: { post: PostItem; user: User }) => {
         <p className="text-sm  ">{post.description}</p>
       </main>
       <main className="p-2">
-        <div className="grid grid-cols-2 grid-rows-2 gap-2 w-full">
+        <div
+          className={`grid  gap-1 w-full ${
+            post.imagePaths.length >= 3
+              ? "grid-cols-2 "
+              : post.imagePaths.length == 2
+              ? "grid-cols-1 grid-rows-2"
+              : ""
+          }`}
+        >
           {post.imagePaths.map((path, index: number) => {
             return index <= 3 ? (
               <div
-                className="relative"
+                className={`relative border  ${
+                  index === 2 && post.imagePaths.length === 3
+                    ? "col-span-2"
+                    : ""
+                }`}
                 onClick={() => {
                   setCurrentIndex(index);
                   setImagesopen(true);
@@ -176,9 +194,9 @@ const Post = ({ post, user }: { post: PostItem; user: User }) => {
                   height={200}
                   width={200}
                   sizes="100vw"
-                  className={`object-cover w-full rounded-md  hover:cursor-pointer ${
-                    index === 3 ? "opacity-50" : ""
-                  }`}
+                  className={`object-cover w-full rounded-md  hover:cursor-pointer
+                  
+                    ${index === 3 ? "opacity-50" : ""}`}
                 />
                 <p
                   className={` ${
@@ -192,7 +210,7 @@ const Post = ({ post, user }: { post: PostItem; user: User }) => {
           })}
         </div>
         <Dialog open={imagesopen} onOpenChange={setImagesopen}>
-          <DialogContent className="w-[90%] max-w-[40rem] ">
+          <DialogContent className="w-[90%] max-w-[40rem]  h-[96vh] ">
             <DialogHeader>
               <DialogTitle>
                 <div className="flex text-start overflow-hidden">
@@ -204,12 +222,12 @@ const Post = ({ post, user }: { post: PostItem; user: User }) => {
                   </Avatar>
                   <div
                     className={
-                      " ml-2 flex flex-col w-[70%] md:w-[80%]  justify-center  leading-6"
+                      " ml-2 flex flex-col w-[70%] md:w-[80%] justify-center  leading-6"
                     }
                   >
                     <h2
                       className={
-                        "justify-center text-lg font-bold overflow-hidden  text-ellipsis"
+                        "justify-center text-sm font-bold overflow-hidden  text-ellipsis"
                       }
                     >
                       {post.author.name}
@@ -234,9 +252,28 @@ const Post = ({ post, user }: { post: PostItem; user: User }) => {
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger asChild>
-              <Button variant={"ghost"}>
-                <Heart size={20} />
-                <p className="p-1">{post.likes > 0 ? post.likes : null}</p>
+              <Button
+                onClick={async () => {
+                  liked ? post.likes-- : post.likes++;
+                  setLiked((prev) => !prev);
+
+                  try {
+                    liked
+                      ? await changePostLikes(post.id, user.id, false)
+                      : await changePostLikes(post.id, user.id, true);
+                  } catch {
+                    liked ? post.likes-- : post.likes++;
+                    setLiked((prev) => !prev);
+                  }
+                }}
+                variant={"ghost"}
+              >
+                {liked ? (
+                  <Heart size={20} className="text-primary mr-1 fill-primary" />
+                ) : (
+                  <Heart size={20} className="" />
+                )}
+                {post.likes > 0 ? post.likes : null}
               </Button>
             </TooltipTrigger>
             <TooltipContent>
@@ -260,7 +297,19 @@ const Post = ({ post, user }: { post: PostItem; user: User }) => {
           </Tooltip>
           <Tooltip>
             <TooltipTrigger asChild>
-              <Button variant={"ghost"} size={"icon"}>
+              <Button
+                onClick={async () => {
+                  await navigator.clipboard.writeText(
+                    `${window.location.origin}/post/${post.id}`
+                  );
+                  toast({
+                    duration: 3000,
+                    description: "copied link to clipboard",
+                  });
+                }}
+                variant={"ghost"}
+                size={"icon"}
+              >
                 <Forward />
               </Button>
             </TooltipTrigger>

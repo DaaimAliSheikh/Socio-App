@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Input } from "./ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import Comment from "./Comment";
@@ -7,8 +7,9 @@ import { User } from "@prisma/client";
 import { CommentItem, PostItem } from "@/lib/types";
 import getComments from "@/actions/getComments";
 import generateInitials from "@/lib/generateInitials";
-import commentAction from "@/actions/commentAction";
-import { LoaderCircle, Router } from "lucide-react";
+import addComment from "@/actions/addComment";
+
+import { LoaderCircle, MessagesSquare } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { Button } from "./ui/button";
 
@@ -21,14 +22,13 @@ const CommentSection = ({ user, post }: { user: User; post: PostItem }) => {
     formState: { isSubmitting },
   } = useForm<{ content: string }>();
 
-  const fetchComments = useCallback(async () => {
-    setLoading(true);
-    const newComments = await getComments(post.id, user.id);
-    setComments(newComments);
-    setLoading(false);
-  }, []);
-
   useEffect(() => {
+    const fetchComments = async () => {
+      setLoading(true);
+      const newComments = await getComments(post.id, user.id);
+      setComments(newComments);
+      setLoading(false);
+    };
     fetchComments();
   }, []);
   return (
@@ -36,11 +36,23 @@ const CommentSection = ({ user, post }: { user: User; post: PostItem }) => {
       <Separator className="my-2" />
       <h3 className="text-xl m-2">Comments</h3>
       {!loading ? (
-        <div>
-          {comments.map((comment: CommentItem) => (
-            <Comment comment={comment} user={user} />
-          ))}
-        </div>
+        comments.length > 0 ? (
+          <div>
+            {comments.map((comment: CommentItem, index: number) => (
+              <Comment
+                key={index}
+                comment={comment}
+                user={user}
+                setComments={setComments}
+              />
+            ))}
+          </div>
+        ) : (
+          <div className="my-8 w-full ">
+            <MessagesSquare strokeWidth={1} className="mx-auto w-16 h-16" />
+            <p className="text-center">No comments</p>
+          </div>
+        )
       ) : (
         <LoaderCircle className="animate-spin m-2 mx-auto" />
       )}
@@ -51,14 +63,17 @@ const CommentSection = ({ user, post }: { user: User; post: PostItem }) => {
           <AvatarFallback>{generateInitials(user.name)}</AvatarFallback>
         </Avatar>
         <form
-          onSubmit={handleSubmit(async (data) => {
-            await commentAction(data.content, user.id, post.id);
-            await fetchComments();
+          onSubmit={handleSubmit(async (data, e) => {
+            e?.target.reset();
+            setComments([
+              ...comments,
+              await addComment(data.content, user.id, post.id),
+            ]);
           })}
           className="w-full flex items-center gap-2"
         >
           <Input
-            {...register("content")}
+            {...register("content", { required: "Please add a comment" })}
             className="h-[2rem]"
             placeholder="Add a comment..."
           ></Input>

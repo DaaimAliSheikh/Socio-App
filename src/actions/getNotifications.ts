@@ -10,17 +10,18 @@ const getNotifications = async (userId: string) => {
         OR: [
           {
             relationA: {
-              some: { userBId: userId, type: {not:"BLOCKED"} },
+              some: { userBId: userId, type: { not: "BLOCKED" } },
             },
           },
           {
             relationB: {
-              some: { userAId: userId,type: {not:"BLOCKED"} },
+              some: { userAId: userId, type: { not: "BLOCKED" } },
             },
           },
         ],
       },
     },
+    orderBy: { createdAt: "desc" },
     select: {
       id: true,
       associateId: true,

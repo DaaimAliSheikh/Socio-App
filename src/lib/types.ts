@@ -54,10 +54,15 @@ export type PostItem = {
 };
 
 export type CommentItem = {
+  post: {
+    author: {
+      id: string;
+    };
+  };
   author: {
+    image: string | null;
     id: string;
     name: string | null;
-    image: string | null;
   };
 } & {
   id: string;

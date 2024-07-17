@@ -31,7 +31,7 @@ const ImageView = ({
     });
   }, [api]);
   return (
-    <Carousel setApi={setApi} className=" w-[85%] mx-auto">
+    <Carousel setApi={setApi} className=" w-[85%]  mx-auto">
       <CarouselContent>
         {imagePaths.map((path: string) => {
           return (
@@ -42,7 +42,7 @@ const ImageView = ({
                 height={200}
                 width={200}
                 sizes="100vw"
-                className="object-cover w-full rounded-md  hover:cursor-pointer"
+                className="object-contain w-full rounded-md max-h-[78vh]  hover:cursor-pointer"
               ></Image>
             </CarouselItem>
           );

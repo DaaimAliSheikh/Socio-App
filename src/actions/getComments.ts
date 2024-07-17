@@ -28,9 +28,13 @@ const getComments = async (postId: string, userId: string) => {
         },
       ],
     },
+    orderBy: { createdAt: "asc" },
 
     include: {
       author: { select: { id: true, name: true, image: true } },
+      post: {
+        select: { author: { select: { id: true } } },
+      },
     },
   });
 };
