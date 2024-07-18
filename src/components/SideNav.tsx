@@ -50,7 +50,9 @@ const SideNav = ({ user }: { user: User }) => {
               <SheetClose asChild>
                 <Card className="flex  shadow-sm hover:cursor-pointer items-center my-2 w-full group p-2 hover:bg-secondary ">
                   <Avatar className="h-10 w-10 ">
-                    <AvatarImage src={user.image || ""} />
+                    <AvatarImage
+                      src={"https://ik.imagekit.io/vmkz9ivsg4" + user.image}
+                    />
                     <AvatarFallback>
                       {generateInitials(user.name)}
                     </AvatarFallback>

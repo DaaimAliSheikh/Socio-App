@@ -19,7 +19,8 @@ const NewPost = ({ user }: { user: User }) => {
       <DialogTrigger asChild>
         <Card className="flex shadow-sm hover:cursor-pointer items-center mb-4 mt-2 w-full group p-2 hover:bg-secondary ">
           <Avatar className="mr-4 group-hover:border-2 group-hover:border-foreground">
-            <AvatarImage src={user?.image || ""} />
+         
+          <AvatarImage src={ "https://ik.imagekit.io/vmkz9ivsg4" + user?.image} />
             <AvatarFallback>{generateInitials(user?.name)}</AvatarFallback>
           </Avatar>
           <div className="flex-grow flex justify-between border text-sm group-hover:bg-card group-hover:border-foreground text-start p-2 rounded-md">

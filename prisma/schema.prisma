@@ -152,9 +152,9 @@ model Notification {
 model CommentLikes {
   id        String  @id @default(cuid())
   comment   Comment @relation(fields: [commentId], references: [id], onDelete: Cascade)
-  commentId String  
+  commentId String
   user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId    String  
+  userId    String
 
   @@unique([commentId, userId])
 }
@@ -162,9 +162,9 @@ model CommentLikes {
 model PostLikes {
   id     String @id @default(cuid())
   post   Post   @relation(fields: [postId], references: [id], onDelete: Cascade)
-  postId String 
+  postId String
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId String 
+  userId String
 
   @@unique([postId, userId])
 }

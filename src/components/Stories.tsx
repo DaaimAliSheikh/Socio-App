@@ -40,7 +40,7 @@ const Stories = ({ user, stories }: { user: User; stories: StoryItem[] }) => {
                     <div className="h-full relative overflow-hidden rounded-lg hover:border-foreground border-2 ">
                       <div className="h-1/2 ">
                         <Avatar className="absolute h-20 w-20 top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2">
-                          <AvatarImage src={user.image || ""} />
+                        <AvatarImage src={ "https://ik.imagekit.io/vmkz9ivsg4" + user?.image} />
                           <AvatarFallback>
                             {generateInitials(user.name)}
                           </AvatarFallback>
@@ -94,7 +94,7 @@ const Stories = ({ user, stories }: { user: User; stories: StoryItem[] }) => {
                         </div>
 
                         <Avatar className="absolute top-0 w-10 h-10 ml-2 mt-2 border-2">
-                          <AvatarImage src={story.user.image || ""} />
+                        <AvatarImage src={ "https://ik.imagekit.io/vmkz9ivsg4" + user?.image} />
                           <AvatarFallback>
                             {generateInitials(story.user.name)}
                           </AvatarFallback>

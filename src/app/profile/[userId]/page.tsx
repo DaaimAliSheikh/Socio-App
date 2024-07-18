@@ -31,6 +31,8 @@ import { PostItem } from "@/lib/types";
 import generateInitials from "@/lib/generateInitials";
 import { auth } from "@/auth";
 
+export const dynamic = "force-dynamic";
+
 const ProfilePage = async ({
   params: { userId },
 }: {
@@ -171,8 +173,8 @@ const ProfilePage = async ({
       <h2 className="text-lg text-start text-muted-foreground font-bold mt-4 mb-2">
         {user.id === currentUser.id ? "Your" : `${user.name}'s`} posts
       </h2>
-      <NewPost user={user} />
-      <PostList user={currentUser} posts={posts} />
+      {currentUser.id === user.id && <NewPost user={user} />}
+      <PostList user={currentUser} initialPosts={posts} />
     </div>
   );
 };

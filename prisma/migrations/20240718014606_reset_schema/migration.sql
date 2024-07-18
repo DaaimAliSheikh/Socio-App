@@ -1,8 +1,8 @@
 -- CreateEnum
-CREATE TYPE "RelationType" AS ENUM ('FRIEND', 'BLOCKED');
+CREATE TYPE "RelationType" AS ENUM ('FRIEND', 'BLOCKED', 'UNFRIEND');
 
 -- CreateEnum
-CREATE TYPE "NotificationType" AS ENUM ('RECEIVED_FRIEND_REQUEST', 'LIKED_POST', 'LIKED_COMMENT', 'COMMENTED_ON_POST');
+CREATE TYPE "NotificationType" AS ENUM ('LIKED_POST', 'LIKED_COMMENT', 'COMMENTED_ON_POST');
 
 -- CreateTable
 CREATE TABLE "users" (
@@ -13,6 +13,7 @@ CREATE TABLE "users" (
     "image" TEXT,
     "coverImage" TEXT,
     "password" TEXT,
+    "bio" TEXT,
 
     CONSTRAINT "users_pkey" PRIMARY KEY ("id")
 );
@@ -50,10 +51,9 @@ CREATE TABLE "Post" (
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "edited" BOOLEAN NOT NULL DEFAULT false,
     "authorId" TEXT NOT NULL,
-    "title" TEXT NOT NULL,
     "description" TEXT NOT NULL,
-    "imagePath" TEXT,
-    "likes" INTEGER NOT NULL,
+    "imagePaths" TEXT[],
+    "likes" INTEGER NOT NULL DEFAULT 0,
 
     CONSTRAINT "Post_pkey" PRIMARY KEY ("id")
 );
@@ -72,7 +72,7 @@ CREATE TABLE "Story" (
 -- CreateTable
 CREATE TABLE "Comment" (
     "id" TEXT NOT NULL,
-    "likes" INTEGER NOT NULL,
+    "likes" INTEGER NOT NULL DEFAULT 0,
     "content" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "edited" BOOLEAN NOT NULL DEFAULT false,
@@ -84,30 +84,52 @@ CREATE TABLE "Comment" (
 
 -- CreateTable
 CREATE TABLE "Relation" (
+    "id" TEXT NOT NULL,
     "userAId" TEXT NOT NULL,
     "userBId" TEXT NOT NULL,
-    "type" "RelationType" NOT NULL,
+    "type" "RelationType" NOT NULL DEFAULT 'UNFRIEND',
 
-    CONSTRAINT "Relation_pkey" PRIMARY KEY ("userAId","userBId")
+    CONSTRAINT "Relation_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "FriendRequest" (
+    "id" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "senderId" TEXT NOT NULL,
     "receiverId" TEXT NOT NULL,
 
-    CONSTRAINT "FriendRequest_pkey" PRIMARY KEY ("senderId","receiverId")
+    CONSTRAINT "FriendRequest_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "Notification" (
+    "id" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "ownerId" TEXT NOT NULL,
     "associateId" TEXT NOT NULL,
     "type" "NotificationType" NOT NULL,
+    "postId" TEXT NOT NULL,
 
-    CONSTRAINT "Notification_pkey" PRIMARY KEY ("ownerId","associateId")
+    CONSTRAINT "Notification_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "CommentLikes" (
+    "id" TEXT NOT NULL,
+    "commentId" TEXT NOT NULL,
+    "userId" TEXT NOT NULL,
+
+    CONSTRAINT "CommentLikes_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "PostLikes" (
+    "id" TEXT NOT NULL,
+    "postId" TEXT NOT NULL,
+    "userId" TEXT NOT NULL,
+
+    CONSTRAINT "PostLikes_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateIndex
@@ -121,6 +143,21 @@ CREATE UNIQUE INDEX "VerifyToken_token_key" ON "VerifyToken"("token");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "VerifyToken_email_token_key" ON "VerifyToken"("email", "token");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Story_userId_key" ON "Story"("userId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Relation_userAId_userBId_key" ON "Relation"("userAId", "userBId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "FriendRequest_senderId_receiverId_key" ON "FriendRequest"("senderId", "receiverId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "CommentLikes_commentId_userId_key" ON "CommentLikes"("commentId", "userId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "PostLikes_postId_userId_key" ON "PostLikes"("postId", "userId");
 
 -- AddForeignKey
 ALTER TABLE "accounts" ADD CONSTRAINT "accounts_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
@@ -154,3 +191,18 @@ ALTER TABLE "Notification" ADD CONSTRAINT "Notification_ownerId_fkey" FOREIGN KE
 
 -- AddForeignKey
 ALTER TABLE "Notification" ADD CONSTRAINT "Notification_associateId_fkey" FOREIGN KEY ("associateId") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Notification" ADD CONSTRAINT "Notification_postId_fkey" FOREIGN KEY ("postId") REFERENCES "Post"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "CommentLikes" ADD CONSTRAINT "CommentLikes_commentId_fkey" FOREIGN KEY ("commentId") REFERENCES "Comment"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "CommentLikes" ADD CONSTRAINT "CommentLikes_userId_fkey" FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "PostLikes" ADD CONSTRAINT "PostLikes_postId_fkey" FOREIGN KEY ("postId") REFERENCES "Post"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "PostLikes" ADD CONSTRAINT "PostLikes_userId_fkey" FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;

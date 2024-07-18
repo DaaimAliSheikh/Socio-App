@@ -2,7 +2,14 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Card } from "./ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Forward, Heart, MessageCircle, Pencil, Settings } from "lucide-react";
+import {
+  Forward,
+  Heart,
+  Loader2,
+  MessageCircle,
+  Pencil,
+  Settings,
+} from "lucide-react";
 import {
   Tooltip,
   TooltipContent,
@@ -34,22 +41,34 @@ import generateInitials from "@/lib/generateInitials";
 import { PostItem } from "@/lib/types";
 import getTimeAgo from "@/lib/getTimeAgo";
 import { User } from "@prisma/client";
-import { useRouter } from "next/navigation";
 import { useToast } from "./ui/use-toast";
 import changePostLikes from "@/actions/changePostLikes";
 import checkPostLiked from "@/actions/checkPostLiked";
+import deletePost from "@/actions/deletePost";
+import splitStringToWords from "@/lib/splitStringToWords";
 
-const Post = ({ post, user }: { post: PostItem; user: User }) => {
+const Post = ({
+  post,
+  user,
+  setPosts,
+  search,
+}: {
+  post: PostItem;
+  user: User;
+  setPosts: React.Dispatch<React.SetStateAction<PostItem[]>>;
+  search?: string;
+}) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [isOverflow, setIsOverflow] = useState(false);
   const [showComments, setShowComments] = useState(false);
   const [editopen, setEditopen] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [imagesopen, setImagesopen] = useState(false);
-  const router = useRouter();
+  const [isDeleting, setIsDeleting] = useState(false);
   const textContainerRef = useRef<HTMLElement>(null);
   const [liked, setLiked] = useState(false);
   const { toast } = useToast();
+  const searchArray = splitStringToWords(search || "");
 
   useEffect(() => {
     if (textContainerRef.current) {
@@ -64,17 +83,37 @@ const Post = ({ post, user }: { post: PostItem; user: User }) => {
         )
       );
     }
+
+    const handleResize = () => {
+      if (textContainerRef.current) {
+        if (
+          textContainerRef.current.clientHeight >=
+          textContainerRef.current.scrollHeight
+        ) {
+          setIsOverflow(false);
+          setIsExpanded(true);
+        }
+      }
+    };
+    window.addEventListener("resize", handleResize);
+
     (async () => setLiked(await checkPostLiked(post.id, user.id)))();
+
+    return () => window.removeEventListener("resize", handleResize);
   }, []);
   return (
     <Card className={`p-2 mb-4`}>
       <div className="flex justify-between items-center">
         <div
           className="flex  overflow-hidden hover:cursor-pointer"
-          onClick={() => router.push(`/profile/${post.author.id}`)}
+          onClick={() =>
+            (window.location.href = `${window.location.origin}/profile/${post.author.id}`)
+          }
         >
           <Avatar className=" m-2 h-10 w-10 border-1">
-            <AvatarImage src={post.author.image || ""} />
+            <AvatarImage
+              src={"https://ik.imagekit.io/vmkz9ivsg4" + post.author.image}
+            />
             <AvatarFallback>
               {generateInitials(post.author.name)}
             </AvatarFallback>
@@ -116,8 +155,13 @@ const Post = ({ post, user }: { post: PostItem; user: User }) => {
                         variant={"ghost"}
                         size={"icon"}
                         className="mr-4 px-2 py-1 flex gap-2"
+                        disabled={isDeleting}
                       >
-                        <Pencil size={18} className="text-muted-foreground" />
+                        {isDeleting ? (
+                          <Loader2 className="animate-spin" />
+                        ) : (
+                          <Pencil size={18} className="text-muted-foreground" />
+                        )}
                       </Button>
                     </DropdownMenuTrigger>
                   </TooltipTrigger>
@@ -132,7 +176,29 @@ const Post = ({ post, user }: { post: PostItem; user: User }) => {
                   Edit
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem>Delete</DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={async () => {
+                    setIsDeleting(true);
+                    try {
+                      await deletePost(post.id);
+                      toast({
+                        description: "Post deleted successfully",
+                      });
+                    } catch {
+                      toast({
+                        title: "Error",
+                        description:
+                          "Something went wrong, could not delete post",
+                        variant: "destructive",
+                      });
+                    }
+
+                    setIsDeleting(false);
+                    setPosts((prev) => prev.filter((p) => p.id != post.id));
+                  }}
+                >
+                  Delete
+                </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
 
@@ -141,7 +207,7 @@ const Post = ({ post, user }: { post: PostItem; user: User }) => {
                 <DialogHeader>
                   <DialogTitle>Edit Post</DialogTitle>
                 </DialogHeader>
-                <NewPostForm post={post} userId={user.id} />
+                <NewPostForm post={post} userId={user.id} setPosts={setPosts} />
               </DialogContent>
             </Dialog>
           </>
@@ -163,7 +229,17 @@ const Post = ({ post, user }: { post: PostItem; user: User }) => {
           </div>
         ) : null}
 
-        <p className="text-sm  ">{post.description}</p>
+        <p className="text-sm  ">
+          {!search
+            ? post.description
+            : splitStringToWords(post.description).map((w, index: number) => (
+                <span key={index}>
+                  <span className={searchArray.includes(w) ? "bg-primary" : ""}>
+                    {w}
+                  </span>{" "}
+                </span>
+              ))}
+        </p>
       </main>
       <main className="p-2">
         <div
@@ -178,6 +254,7 @@ const Post = ({ post, user }: { post: PostItem; user: User }) => {
           {post.imagePaths.map((path, index: number) => {
             return index <= 3 ? (
               <div
+                key={index}
                 className={`relative border  ${
                   index === 2 && post.imagePaths.length === 3
                     ? "col-span-2"
@@ -215,7 +292,9 @@ const Post = ({ post, user }: { post: PostItem; user: User }) => {
               <DialogTitle>
                 <div className="flex text-start overflow-hidden">
                   <Avatar className=" m-2 h-10 w-10 border-1">
-                    <AvatarImage src={post.author.image || ""} />
+                    <AvatarImage
+                      src={"https://ik.imagekit.io/vmkz9ivsg4" + user?.image}
+                    />
                     <AvatarFallback>
                       {generateInitials(post.author.name)}
                     </AvatarFallback>
@@ -268,11 +347,15 @@ const Post = ({ post, user }: { post: PostItem; user: User }) => {
                 }}
                 variant={"ghost"}
               >
-                {liked ? (
-                  <Heart size={20} className="text-primary mr-1 fill-primary" />
-                ) : (
-                  <Heart size={20} className="" />
-                )}
+                <Heart
+                  size={20}
+                  className={
+                    liked
+                      ? "text-primary mr-1 fill-primary transition-all"
+                      : "transition-all"
+                  }
+                />
+
                 {post.likes > 0 ? post.likes : null}
               </Button>
             </TooltipTrigger>

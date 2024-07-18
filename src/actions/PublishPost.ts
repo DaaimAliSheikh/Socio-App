@@ -19,7 +19,7 @@ const PublishPost = async (data: FormData, userId: string) => {
       });
 
     const result = await Promise.all(uploadPromises);
-    await db.post.create({
+    const newPost = await db.post.create({
       data: {
         description: data.get("description") as string,
         imagePaths: result.map((item) => item.filePath),
@@ -29,8 +29,12 @@ const PublishPost = async (data: FormData, userId: string) => {
           },
         },
       },
+      include: {
+        author: { select: { id: true, name: true, image: true } },
+        comments: true,
+      },
     });
-    return { success: "Post successfully uploaded" };
+    return { success: "Post successfully uploaded", post: newPost };
   } catch (e) {
     console.log(e);
     return { error: "Error while uploading post. Please try again." };

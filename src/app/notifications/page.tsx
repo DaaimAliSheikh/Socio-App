@@ -29,7 +29,7 @@ const NotificationsPage = async ({
     <main className="flex items-start flex-col  w-[90%] mx-auto  max-w-[40rem]">
       <div className="text-2xl flex w-full justify-between items-center text-muted-foreground font-bold my-2">
         Notifications
-          <NotificationsRefresh />
+        <NotificationsRefresh />
       </div>
       <ul className="w-full">
         {notifications.length > 0 ? (
@@ -41,7 +41,12 @@ const NotificationsPage = async ({
               >
                 <div className="w-[10%] flex justify-center items-center">
                   <Avatar>
-                    <AvatarImage src={notif.associate.image || ""} />
+                    <AvatarImage
+                      src={
+                        "https://ik.imagekit.io/vmkz9ivsg4" +
+                        notif.associate.image
+                      }
+                    />
                     <AvatarFallback>
                       {generateInitials(notif.associate.name)}
                     </AvatarFallback>

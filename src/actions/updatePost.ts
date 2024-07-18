@@ -19,15 +19,20 @@ const updatePost = async (data: FormData, postId: string) => {
         });
       });
 
-    if (uploadPromises.length === 0)
+    if (uploadPromises.length === 0) {
       //update rest of the things except images
-      await db.post.update({
+      const updatedPost = await db.post.update({
         where: { id: postId },
         data: {
           description: data.get("description") as string,
         },
+        include: {
+          author: { select: { id: true, name: true, image: true } },
+          comments: true,
+        },
       });
-    else {
+      return { success: "Post successfully updated", post: updatedPost };
+    } else {
       ///delete old images from imagekit
       const post = await db.post.findUnique({
         where: { id: postId },
@@ -51,17 +56,20 @@ const updatePost = async (data: FormData, postId: string) => {
       const result = await Promise.all(uploadPromises);
 
       //update post in db
-      await db.post.update({
+      const updatedPost = await db.post.update({
         where: { id: postId },
         data: {
           description: data.get("description") as string,
           imagePaths: result.map((item) => item.filePath),
           edited: true,
         },
+        include: {
+          author: { select: { id: true, name: true, image: true } },
+          comments: true,
+        },
       });
+      return { success: "Post successfully updated", post: updatedPost };
     }
-
-    return { success: "Post successfully updated" };
   } catch (e) {
     console.log(e);
     return { error: "Error while updating post. Please try again." };

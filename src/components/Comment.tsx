@@ -73,7 +73,21 @@ const Comment = ({
         )
       );
     }
+
+    const handleResize = () => {
+      if (textContainerRef.current) {
+        if (
+          textContainerRef.current.clientHeight >=
+          textContainerRef.current.scrollHeight
+        ) {
+          setIsOverflow(false);
+          setIsExpanded(true);
+        }
+      }
+    };
+    window.addEventListener("resize", handleResize);
     (async () => setLiked(await checkCommentLiked(comment.id, user.id)))();
+    return () => window.removeEventListener("resize", handleResize);
   }, []);
 
   return (
@@ -81,8 +95,10 @@ const Comment = ({
       <div
         className={`flex border-primary border-l-4 pl-2 overflow-hidden w-full`}
       >
-        <Avatar className=" mx-2 mt-1 self-start h-8 w-8 border-1">
-          <AvatarImage src={comment.author.image || ""} />
+        <Avatar className=" mx-2  self-start h-8 w-8 border-1">
+          <AvatarImage
+            src={"https://ik.imagekit.io/vmkz9ivsg4" + comment.author.image}
+          />
           <AvatarFallback>
             {generateInitials(comment.author.name)}
           </AvatarFallback>
@@ -92,7 +108,7 @@ const Comment = ({
             " ml-1 flex flex-col w-full  justify-center  overflow-hidden  leading-6"
           }
         >
-          <div className="flex w-fit justify-between items-center gap-2">
+          <div onClick={() => window.location.href = `/profile/${comment.author.id}`} className="flex w-fit hover:cursor-pointer justify-between items-center gap-2">
             <h2
               className={
                 "justify-center text-sm font-bold overflow-hidden  text-ellipsis"
@@ -144,11 +160,14 @@ const Comment = ({
               }}
               className=" flex gap-1 items-center  hover:text-muted-foreground hover:cursor-pointer"
             >
-              {liked ? (
-                <Heart size={16} className="text-primary fill-primary" />
-              ) : (
-                <Heart size={16} className="" />
-              )}
+              <Heart
+                size={16}
+                className={
+                  liked
+                    ? "text-primary mr-1 fill-primary transition-all"
+                    : "transition-all"
+                }
+              />
               {comment.likes > 0 ? comment.likes : null}
             </p>
             <p className="h-full w-[2px] bg-secondary"></p>
@@ -225,7 +244,9 @@ const Comment = ({
               >
                 <div className="flex  gap-x-3 items-center">
                   <Avatar className="h-8 w-8 self-start mt-1">
-                    <AvatarImage src={user?.image || ""} />
+                    <AvatarImage
+                      src={"https://ik.imagekit.io/vmkz9ivsg4" + user?.image}
+                    />
                     <AvatarFallback>
                       {generateInitials(user?.name)}
                     </AvatarFallback>

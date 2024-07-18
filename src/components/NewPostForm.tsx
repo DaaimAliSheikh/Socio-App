@@ -12,20 +12,29 @@ import { Badge } from "./ui/badge";
 
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "./ui/separator";
-import { Loader2, X } from "lucide-react";
+import { Loader2, Router, X } from "lucide-react";
 import PublishPost from "@/actions/PublishPost";
 import { Post } from "@prisma/client";
-import { useRouter } from "next/navigation";
 import { useToast } from "./ui/use-toast";
 import updatePost from "@/actions/updatePost";
 import Image from "next/image";
+import { PostItem } from "@/lib/types";
+import { useRouter } from "next/navigation";
 
 export interface PostFormInputs {
   description: string;
   media?: File[];
 }
 
-const NewPostForm = ({ userId, post }: { userId: string; post?: Post }) => {
+const NewPostForm = ({
+  userId,
+  post,
+  setPosts,
+}: {
+  userId: string;
+  post?: Post;
+  setPosts?: React.Dispatch<React.SetStateAction<PostItem[]>>;
+}) => {
   const {
     handleSubmit,
     register,
@@ -39,8 +48,8 @@ const NewPostForm = ({ userId, post }: { userId: string; post?: Post }) => {
       media: [],
     },
   });
-  const router = useRouter();
   const { toast } = useToast();
+  const router = useRouter();
 
   const onSubmit: SubmitHandler<PostFormInputs> = async (data) => {
     const formData = new FormData();
@@ -67,7 +76,11 @@ const NewPostForm = ({ userId, post }: { userId: string; post?: Post }) => {
         duration: 3000,
         description: result.success,
       });
-      router.refresh();
+      if (setPosts)  ///if set post is not present then it means a new post is created from newpost component on the home page, hence we can do router.refresh as the initial posts for the Postlist component on the home page are coming from server component
+        setPosts((prev: PostItem[]) =>
+          prev.map((post) => (post.id === result.post?.id ? result.post : post))
+        );
+      else router.refresh();
     }
   };
 

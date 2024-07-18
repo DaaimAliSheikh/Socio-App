@@ -18,13 +18,21 @@ const EditProfile = async (data: FormData, userId: string) => {
 
       if (data.get("profileImage")) {
         //delete old profile image if exists
-        if (user?.image) {
-          const files = await imagekit.listFiles({ path: "/socio/" });
-          const fileId = files.find((f) => {
-            return f.filePath === user?.image;
-          })?.fileId as string;
-          await imagekit.deleteFile(fileId);
+
+        try {
+          if (user?.image) {
+            const files = await imagekit.listFiles({ path: "/socio/" });
+            const fileId = files.find((f) => {
+              return f.filePath === user?.image;
+            })?.fileId as string;
+            await imagekit.deleteFile(fileId);
+          }
+        } catch {
+          console.log("could not find profile image on imagekit");
+          //do nothing. the case where profile image is from OAUTH provider
+          //not present in imagekit file storage
         }
+
         const { filePath } = await imagekit.upload({
           file: Buffer.from(
             await (data.get("profileImage") as File).arrayBuffer()
@@ -38,13 +46,19 @@ const EditProfile = async (data: FormData, userId: string) => {
         uploadValues.image = filePath;
       }
       if (data.get("coverImage")) {
-        //delete old profile image if exists
-        if (user?.coverImage) {
-          const files = await imagekit.listFiles({ path: "/socio/" });
-          const fileId = files.find((f) => {
-            return f.filePath === user?.coverImage;
-          })?.fileId as string;
-          await imagekit.deleteFile(fileId);
+        //delete old cover image if exists
+        try {
+          if (user?.coverImage) {
+            const files = await imagekit.listFiles({ path: "/socio/" });
+            const fileId = files.find((f) => {
+              return f.filePath === user?.coverImage;
+            })?.fileId as string;
+            await imagekit.deleteFile(fileId);
+          }
+        } catch {
+          console.log("could not find cover image on imagekit");
+          //do nothing. the case where profile image is from OAUTH provider
+          //not present in imagekit file storage
         }
         const { filePath } = await imagekit.upload({
           file: Buffer.from(

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 
 import { SubmitHandler, useForm } from "react-hook-form";
 import { Input } from "./ui/input";
@@ -12,11 +12,12 @@ import { Badge } from "./ui/badge";
 
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "./ui/separator";
-import { X } from "lucide-react";
+import { Loader2, Loader2Icon, X } from "lucide-react";
 import EditProfile from "@/actions/EditProfile";
 import { useRouter } from "next/navigation";
 import { useToast } from "./ui/use-toast";
 import { User } from "@prisma/client";
+import Image from "next/image";
 
 export interface EditProfileFormInputs {
   name: string;
@@ -211,18 +212,25 @@ const EditProfileForm = ({ user }: { user: User }) => {
           )}
           {profileAcceptedFiles.map((file) => (
             <li key={file.name}>
-              <Badge variant="outline">
-                {file.name}
+              <div className="relative">
+                <Image
+                  alt="post images"
+                  sizes="100vw"
+                  src={URL.createObjectURL(file)}
+                  height={100}
+                  width={100}
+                  className="w-20 h-20 object-cover rounded-md"
+                />
                 <Button
                   type="button"
-                  variant={"ghost"}
+                  variant={"outline"}
                   size={"icon"}
-                  className="p-0 rounded-full w-6 h-6 ml-2"
+                  className="p-0 absolute top-1 right-1 rounded-full w-5 h-5 ml-2"
                   onClick={removeProfileFile(file)}
                 >
                   <X size={17} />
                 </Button>
-              </Badge>
+              </div>
             </li>
           ))}
         </ul>
@@ -254,18 +262,25 @@ const EditProfileForm = ({ user }: { user: User }) => {
           )}
           {coverAcceptedFiles.map((file) => (
             <li key={file.name}>
-              <Badge variant="outline">
-                {file.name}
+              <div className="relative">
+                <Image
+                  alt="post images"
+                  sizes="100vw"
+                  src={URL.createObjectURL(file)}
+                  height={100}
+                  width={100}
+                  className="w-20 h-20 object-cover rounded-md"
+                />
                 <Button
                   type="button"
-                  variant={"ghost"}
+                  variant={"outline"}
                   size={"icon"}
-                  className="p-0 rounded-full w-6 h-6 ml-2"
+                  className="p-0 absolute top-1 right-1 rounded-full w-5 h-5 ml-2"
                   onClick={removeCoverFile(file)}
                 >
                   <X size={17} />
                 </Button>
-              </Badge>
+              </div>
             </li>
           ))}
         </ul>
@@ -280,8 +295,10 @@ const EditProfileForm = ({ user }: { user: User }) => {
         <Button
           className="self-center text-foreground hover:bg-secondary"
           type="submit"
+          disabled={isSubmitting}
         >
           Save Changes
+          {isSubmitting && <Loader2 className=" ml-2 animate-spin" />}
         </Button>
       </form>
     </ScrollArea>

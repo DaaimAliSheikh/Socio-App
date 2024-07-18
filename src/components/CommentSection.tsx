@@ -59,7 +59,7 @@ const CommentSection = ({ user, post }: { user: User; post: PostItem }) => {
 
       <div className="flex gap-x-2 items-center">
         <Avatar className="h-8 w-8">
-          <AvatarImage src={user.image || ""} />
+        <AvatarImage src={ "https://ik.imagekit.io/vmkz9ivsg4" + user?.image} />
           <AvatarFallback>{generateInitials(user.name)}</AvatarFallback>
         </Avatar>
         <form

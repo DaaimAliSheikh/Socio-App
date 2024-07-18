@@ -158,7 +158,12 @@ const NavItems = ({ user }: { user: User }) => {
                   >
                     <div className="w-[20%] flex justify-center items-center">
                       <Avatar>
-                        <AvatarImage src={notif.associate.image || ""} />
+                        <AvatarImage
+                          src={
+                            "https://ik.imagekit.io/vmkz9ivsg4" +
+                            notif.associate.image
+                          }
+                        />
                         <AvatarFallback>
                           {generateInitials(notif.associate.name)}
                         </AvatarFallback>
@@ -211,7 +216,9 @@ const NavItems = ({ user }: { user: User }) => {
         <DropdownMenu>
           <DropdownMenuTrigger className="rounded-full">
             <Avatar className=" self-center">
-              <AvatarImage src={user.image || ""} />
+              <AvatarImage
+                src={"https://ik.imagekit.io/vmkz9ivsg4" + user.image}
+              />
               <AvatarFallback>{generateInitials(user.name)}</AvatarFallback>
             </Avatar>
           </DropdownMenuTrigger>
