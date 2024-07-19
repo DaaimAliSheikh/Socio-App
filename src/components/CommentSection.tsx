@@ -30,7 +30,7 @@ const CommentSection = ({ user, post }: { user: User; post: PostItem }) => {
       setLoading(false);
     };
     fetchComments();
-  }, []);
+  }, [post.id, user.id]);
   return (
     <main>
       <Separator className="my-2" />
@@ -59,7 +59,13 @@ const CommentSection = ({ user, post }: { user: User; post: PostItem }) => {
 
       <div className="flex gap-x-2 items-center">
         <Avatar className="h-8 w-8">
-        <AvatarImage src={ "https://ik.imagekit.io/vmkz9ivsg4" + user?.image} />
+          <AvatarImage
+            src={
+              (user?.image?.startsWith("/socio")
+                ? "https://ik.imagekit.io/vmkz9ivsg4"
+                : "") + user?.image
+            }
+          />
           <AvatarFallback>{generateInitials(user.name)}</AvatarFallback>
         </Avatar>
         <form
@@ -67,7 +73,7 @@ const CommentSection = ({ user, post }: { user: User; post: PostItem }) => {
             e?.target.reset();
             setComments([
               ...comments,
-              await addComment(data.content, user.id, post.id),
+              await addComment(data.content, user.id, post.author.id, post.id),
             ]);
           })}
           className="w-full flex items-center gap-2"

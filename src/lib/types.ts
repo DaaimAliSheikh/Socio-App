@@ -16,8 +16,8 @@ export type NotificationItem = {
 
 export type StoryItem = {
   user: {
-    id: string;
     image: string | null;
+    id: string;
     name: string | null;
   };
 } & {

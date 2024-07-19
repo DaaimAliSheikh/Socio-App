@@ -3,22 +3,28 @@
 import { db } from "@/db/db";
 
 const getNotifications = async (userId: string) => {
-  const notfication = await db.notification.findMany({
+  return await db.notification.findMany({
     where: {
       ownerId: userId,
       associate: {
-        OR: [
-          {
-            relationA: {
-              some: { userBId: userId, type: { not: "BLOCKED" } },
+        is: {
+          OR: [
+            {
+              relationA: {
+                some: { userBId: userId, type: { not: "BLOCKED" } },
+              },
             },
-          },
-          {
-            relationB: {
-              some: { userAId: userId, type: { not: "BLOCKED" } },
+            {
+              relationB: {
+                some: { userAId: userId, type: { not: "BLOCKED" } },
+              },
             },
-          },
-        ],
+            {
+              relationA: { none: {} },
+              relationB: { none: {} },
+            },
+          ],
+        },
       },
     },
     orderBy: { createdAt: "desc" },
@@ -40,7 +46,6 @@ const getNotifications = async (userId: string) => {
       },
     },
   });
-  return notfication;
 };
 
 export default getNotifications;

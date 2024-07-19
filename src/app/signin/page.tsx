@@ -3,7 +3,7 @@ import AuthForm from "@/components/AuthForm";
 import getUserById from "@/lib/getUserById";
 import React from "react";
 
-// export const dynamic = "force-dynamic";
+export const dynamic = "force-dynamic";
 
 const Underline = (
   <svg

@@ -15,6 +15,7 @@ datasource db {
 
 enum RelationType {
   FRIEND
+
   BLOCKED
 }
 
@@ -25,26 +26,27 @@ enum NotificationType {
 }
 
 model User {
-  id            String          @id @default(cuid())
-  name          String?
-  email         String?         @unique
-  emailVerified DateTime?       @map("email_verified")
-  image         String?
-  coverImage    String?
-  password      String?
-  bio           String?
-  posts         Post[]
-  accounts      Account[]
-  Comments      Comment[]
-  relationA     Relation[]      @relation("userA")
-  relationB     Relation[]      @relation("userB")
-  sender        FriendRequest[] @relation("sender")
-  receiver      FriendRequest[] @relation("receiver")
-  owner         Notification[]  @relation("owner")
-  associate     Notification[]  @relation("associate")
-  story         Story?
-  commentlikes  CommentLikes[]
-  postlikes     PostLikes[]
+  id             String           @id @default(cuid())
+  name           String?
+  email          String?          @unique
+  emailVerified  DateTime?        @map("email_verified")
+  image          String?
+  coverImage     String?
+  password       String?
+  bio            String?
+  posts          Post[]
+  accounts       Account[]
+  Comments       Comment[]
+  relationA      Relation[]       @relation("userA")
+  relationB      Relation[]       @relation("userB")
+  sender         FriendRequest[]  @relation("sender")
+  receiver       FriendRequest[]  @relation("receiver")
+  owner          Notification[]   @relation("owner")
+  associate      Notification[]   @relation("associate")
+  story          Story?
+  commentlikes   CommentLikes[]
+  postlikes      PostLikes[]
+  recentsearches RecentSearches[]
 
   @@map("users")
 }
@@ -167,4 +169,11 @@ model PostLikes {
   userId String
 
   @@unique([postId, userId])
+}
+
+model RecentSearches {
+  id     String @id @default(cuid())
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String 
+  search String @unique
 }

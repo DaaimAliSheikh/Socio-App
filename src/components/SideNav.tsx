@@ -17,11 +17,21 @@ import {
   CommandItem,
   CommandList,
   CommandDialog,
+  CommandSeparator,
 } from "@/components/ui/command";
 
-import { Bell, House, Menu, Moon, Search, Sun, Users } from "lucide-react";
+import {
+  Bell,
+  House,
+  Menu,
+  Moon,
+  RefreshCcw,
+  Search,
+  Sun,
+  Users,
+} from "lucide-react";
 import { Button } from "./ui/button";
-import { User } from "@prisma/client";
+import { RecentSearches, User } from "@prisma/client";
 import { Card } from "./ui/card";
 import Link from "next/link";
 import { useTheme } from "next-themes";
@@ -30,10 +40,23 @@ import LogoutButton from "./LogoutButton";
 import { redirect } from "next/navigation";
 import generateInitials from "@/lib/generateInitials";
 
-const SideNav = ({ user }: { user: User }) => {
+const SideNav = ({
+  user,
+  recentSearches,
+}: {
+  user: User;
+  recentSearches: RecentSearches[];
+}) => {
   const { theme, setTheme } = useTheme();
   const [searchOpen, setSearchOpen] = useState(false);
   const [sheetOpen, setSheetOpen] = useState(false);
+
+  const [inputValue, setInputValue] = useState("");
+  const handleSelect = (currentValue: string) => {
+    window.location.href = `/search?key=${currentValue}`;
+    setSearchOpen(false);
+    setSheetOpen(false);
+  };
 
   return (
     <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
@@ -46,18 +69,22 @@ const SideNav = ({ user }: { user: User }) => {
       <SheetContent className="w-[70vw]" side={"left"}>
         <Card className="border-none shadow-none bg-transparent">
           <SheetHeader className="mt-2">
-            <Link href={"/profile"}>
+            <a href={`/profile/${user.id}`}>
               <SheetClose asChild>
                 <Card className="flex  shadow-sm hover:cursor-pointer items-center my-2 w-full group p-2 hover:bg-secondary ">
                   <Avatar className="h-10 w-10 ">
                     <AvatarImage
-                      src={"https://ik.imagekit.io/vmkz9ivsg4" + user.image}
+                      src={
+                        (user?.image?.startsWith("/socio")
+                          ? "https://ik.imagekit.io/vmkz9ivsg4"
+                          : "") + user?.image
+                      }
                     />
                     <AvatarFallback>
                       {generateInitials(user.name)}
                     </AvatarFallback>
                   </Avatar>
-                  <div className="ml-4 ">
+                  <div className="ml-4 overflow-hidden">
                     <h2 className="text-1xl font-bold text-start">
                       {user.name}
                     </h2>
@@ -67,11 +94,11 @@ const SideNav = ({ user }: { user: User }) => {
                   </div>
                 </Card>
               </SheetClose>
-            </Link>
+            </a>
 
             <ul>
               <li>
-                <Link href="/">
+                <a href="/">
                   <SheetClose asChild>
                     <Button
                       variant={"ghost"}
@@ -81,7 +108,7 @@ const SideNav = ({ user }: { user: User }) => {
                       <p>Home</p>
                     </Button>
                   </SheetClose>
-                </Link>
+                </a>
               </li>
 
               <li>
@@ -94,27 +121,42 @@ const SideNav = ({ user }: { user: User }) => {
                   <p>Search</p>
                 </Button>
                 <CommandDialog open={searchOpen} onOpenChange={setSearchOpen}>
-                  <CommandInput placeholder="Search for People or Posts..." />
+                  <CommandInput
+                    value={inputValue}
+                    onValueChange={(value) => {
+                      setInputValue(value);
+                    }}
+                    placeholder="Search for People or Posts..."
+                  />
                   <CommandList>
                     <CommandEmpty>No results found.</CommandEmpty>
-                    <CommandGroup heading="Recent Searches">
-                      <Link
-                        href="/search"
-                        onClick={() => {
-                          setSheetOpen(false);
-                          setSearchOpen(false);
-                        }}
-                      >
-                        <CommandItem>Search Emoji</CommandItem>
-                      </Link>
-                      <CommandItem>Calculator</CommandItem>
-                      <CommandItem>a</CommandItem>
+                    {inputValue && (
+                      <CommandGroup heading="Search results for:">
+                        <CommandItem onSelect={() => handleSelect(inputValue)}>
+                        &quot;{inputValue}&quot;
+                        </CommandItem>
+                      </CommandGroup>
+                    )}
+                    <CommandSeparator />
+
+                    <CommandGroup heading="Recent searches">
+                      {recentSearches?.map((recent) => (
+                        <CommandItem
+                          key={recent.id}
+                          onSelect={() => handleSelect(recent.search)}
+                        >
+                          <div className="flex">
+                            <RefreshCcw size={15} className="mr-2" />
+                            <p>{recent.search}</p>
+                          </div>
+                        </CommandItem>
+                      ))}
                     </CommandGroup>
                   </CommandList>
                 </CommandDialog>
               </li>
               <li>
-                <Link href="/friends" legacyBehavior passHref>
+                <a href="/friends">
                   <SheetClose asChild>
                     <Button
                       variant={"ghost"}
@@ -124,10 +166,10 @@ const SideNav = ({ user }: { user: User }) => {
                       <p>Friends</p>
                     </Button>
                   </SheetClose>
-                </Link>
+                </a>
               </li>
               <li>
-                <Link href={"/notifications"}>
+                <a href={"/notifications"}>
                   <SheetClose asChild>
                     <Button
                       variant={"ghost"}
@@ -137,7 +179,7 @@ const SideNav = ({ user }: { user: User }) => {
                       <p>Notifications</p>
                     </Button>
                   </SheetClose>
-                </Link>
+                </a>
               </li>
               <li>
                 <SheetClose asChild>
@@ -160,7 +202,7 @@ const SideNav = ({ user }: { user: User }) => {
                 <form
                   action={async () => {
                     await logoutAction();
-                    redirect("/signin");
+                    window.location.href = "/signin";
                   }}
                 >
                   <LogoutButton />

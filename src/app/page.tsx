@@ -17,8 +17,11 @@ const HomePage = async () => {
   const stories = await getStories(user.id);
   const initialPosts: PostItem[] = await getPostsByUserId(user.id);
   return (
-    <div className="flex-grow flex flex-col items-center max-w-[50rem] mx-auto w-[90%]  mt-2">
+    <div className="flex-grow flex flex-col items-center max-w-[50rem] mx-auto w-[95%]  mt-2">
       <NewPost user={user} />
+      <h2 className="text-xl text-muted-foreground font-bold self-start my-1">
+        Stories
+      </h2>
       <Stories stories={stories} user={user} />
       {initialPosts.length < 1 ? (
         <>

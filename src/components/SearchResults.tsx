@@ -9,9 +9,6 @@ import { User } from "@prisma/client";
 import getPostsByUserId from "@/actions/getPostsByUserId";
 
 import UsersList from "./UsersList";
-import getUsersBySearchTerm from "@/actions/getUsersBySearchTerm";
-
-
 
 const SearchResults = ({ user }: { user: User }) => {
   const searchParams = useSearchParams();
@@ -25,14 +22,13 @@ const SearchResults = ({ user }: { user: User }) => {
         searchParams.get("key") || ""
       );
       setPosts(initialPosts);
-   
     })();
-  }, [searchParams]);
+  }, [searchParams, user.id]);
 
   return (
-    <main className="flex p-4 border-none shadow-none items-start flex-col border w-[90%] mx-auto  max-w-[50rem]">
+    <main className="flex p-2 border-none shadow-none items-start flex-col border w-[90%] mx-auto  max-w-[50rem]">
       <h1 className="text-1xl text-muted-foreground font-bold my-2">
-        Search results for: "{searchParams.get("key")}"
+        Search results for: &quot;{searchParams.get("key")}&quot;
       </h1>
       <Tabs defaultValue="posts" className="w-full  ">
         <TabsList className="grid w-full grid-cols-2">
@@ -43,7 +39,7 @@ const SearchResults = ({ user }: { user: User }) => {
           className="w-full mx-auto mt-4 max-w-[40rem] space-y-4"
           value="people"
         >
-          <UsersList  user={user} />
+          <UsersList user={user} />
         </TabsContent>
         <TabsContent className="mt-4" value="posts">
           <PostList

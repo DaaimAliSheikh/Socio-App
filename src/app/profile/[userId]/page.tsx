@@ -98,7 +98,13 @@ const ProfilePage = async ({
               <Avatar
                 className={`absolute hover:cursor-pointer top-2/3   left-1/2 -translate-y-[60%] -translate-x-1/2  h-28 w-28 border-4 ${"md:-translate-y-[40%]"}`}
               >
-                <AvatarImage src={user.image || ""} />
+                <AvatarImage
+                  src={
+                    (user?.image?.startsWith("/socio")
+                      ? "https://ik.imagekit.io/vmkz9ivsg4"
+                      : "") + user?.image
+                  }
+                />
                 <AvatarFallback className="text-4xl">
                   {generateInitials(user.name)}
                 </AvatarFallback>
@@ -119,10 +125,10 @@ const ProfilePage = async ({
             </DialogContent>
           </Dialog>
 
-          <div className="flex flex-col gap-2 items-center leading-2 pt-8">
-            <div className="flex ">
+          <div className="flex  flex-col gap-2 items-center leading-2 pt-8">
+            <div className="flex  justify-center mt-2 md:mt-0 ">
               <h3
-                className={` text-2xl mt-2 md:mt-0 ${
+                className={` text-2xl w-[65%] text-center text-ellipsis overflow-hidden whitespace-nowrap  ${
                   user.id === currentUser.id ? "ml-12" : ""
                 }`}
               >

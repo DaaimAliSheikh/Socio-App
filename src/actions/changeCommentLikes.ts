@@ -4,7 +4,9 @@ import { db } from "@/db/db";
 
 const changeCommentLikes = async (
   commentId: string,
+  postId: string,
   userId: string,
+  otherUserId: string,
   increment: boolean
 ) => {
   await db.$transaction([
@@ -23,6 +25,24 @@ const changeCommentLikes = async (
           },
         }),
   ]);
+
+  if (userId === otherUserId || !increment) return;
+  await db.notification.deleteMany({
+    where: {
+      owner: { id: otherUserId },
+      type: "LIKED_COMMENT",
+      post: { id: postId },
+      associate: { id: userId },
+    },
+  });
+  await db.notification.create({
+    data: {
+      owner: { connect: { id: otherUserId } },
+      type: "LIKED_COMMENT",
+      post: { connect: { id: postId } },
+      associate: { connect: { id: userId } },
+    },
+  });
 };
 
 export default changeCommentLikes;

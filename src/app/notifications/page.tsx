@@ -14,20 +14,23 @@ import Image from "next/image";
 import deleteNotification from "@/actions/deleteNotification";
 import NotificationDeleteButton from "@/components/NotificationDeleteButton";
 import Link from "next/link";
+import { auth } from "@/auth";
+import getUserById from "@/lib/getUserById";
 
-const NotificationsPage = async ({
-  params,
-}: {
-  params: { userId: string };
-}) => {
+export const dynamic = "force-dynamic";
+
+export const fetchCache = "force-no-store";
+
+const NotificationsPage = async () => {
   ///retrieve the notifications from the database server action
-  const notifications: NotificationItem[] = await getNotifications(
-    params.userId
-  );
+  const session = await auth();
+  const user = await getUserById(session?.user?.id);
+  if (!user) return null;
+  const notifications: NotificationItem[] = await getNotifications(user.id);
 
   return (
     <main className="flex items-start flex-col  w-[90%] mx-auto  max-w-[40rem]">
-      <div className="text-2xl flex w-full justify-between items-center text-muted-foreground font-bold my-2">
+      <div className="text-md flex w-full justify-between items-center text-muted-foreground font-bold my-2">
         Notifications
         <NotificationsRefresh />
       </div>
@@ -37,14 +40,15 @@ const NotificationsPage = async ({
             return (
               <Card
                 key={index}
-                className="flex justify-between w-full items-center hover:bg-secondary hover:cursor-pointer "
+                className="flex  w-full items-center hover:bg-secondary hover:cursor-pointer "
               >
-                <div className="w-[10%] flex justify-center items-center">
+                <div className="w-[15%] md:w-[10%]  flex justify-center items-center">
                   <Avatar>
                     <AvatarImage
                       src={
-                        "https://ik.imagekit.io/vmkz9ivsg4" +
-                        notif.associate.image
+                        (notif.associate?.image?.startsWith("/socio")
+                          ? "https://ik.imagekit.io/vmkz9ivsg4"
+                          : "") + notif.associate?.image
                       }
                     />
                     <AvatarFallback>
@@ -52,9 +56,9 @@ const NotificationsPage = async ({
                     </AvatarFallback>
                   </Avatar>
                 </div>
-                <Link
+                <a
                   href={`/post/${notif.post.id}`}
-                  className={" flex flex-col w-[80%]   justify-center "}
+                  className={" flex flex-col w-[70%]   justify-center "}
                 >
                   <h2 className="whitespace-nowrap overflow-hidden text-ellipsis">
                     {generateNotifContent(notif)}
@@ -63,10 +67,10 @@ const NotificationsPage = async ({
                   <p className="text-muted-foreground text-xs">
                     {getTimeAgo(notif.createdAt)}
                   </p>
-                </Link>
+                </a>
 
                 <form
-                  className=" mx-2 my-4 w-[7%] flex justify-center items-center"
+                  className=" mx-2 my-4  justify-end flex-grow w-[7%] flex  items-center"
                   action={deleteNotification.bind(null, notif.id)}
                 >
                   <NotificationDeleteButton />
@@ -83,7 +87,7 @@ const NotificationsPage = async ({
               width={200}
               height={200}
             ></Image>
-            <h1 className="text-2xl text-muted-foreground text-center mt-4">
+            <h1 className="text-md text-muted-foreground text-center mt-4">
               No notifications!
             </h1>
           </>

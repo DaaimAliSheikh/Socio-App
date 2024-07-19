@@ -1,44 +1,54 @@
 "use server";
 
 import { db } from "@/db/db";
-import splitStringToWords from "@/lib/splitStringToWords";
 
 const getUsersBySearchTerm = async (
   userId: string,
   skip: number = 0,
-  search: string = ""
+  search: string = "",
+  onlyBlocked?: boolean,
+  onlyFriends?: boolean
 ) => {
   return await db.user.findMany({
     where: {
-      OR: splitStringToWords(search).map((word) => ({
-        name: {
-          contains: word,
-          mode: "insensitive",
-        },
+      name: {
+        contains: search,
+        mode: "insensitive",
+      },
 
-        OR: [
-          {
-            relationA: {
-              some: {
-                userBId: userId,
-                type: { not: "BLOCKED" },
-              },
+      OR: [
+        {
+          relationA: {
+            some: {
+              userBId: userId,
+              type: onlyBlocked
+                ? "BLOCKED"
+                : onlyFriends
+                ? "FRIEND"
+                : { not: "BLOCKED" },
             },
           },
-          {
-            relationB: {
-              some: {
-                userAId: userId,
-                type: { not: "BLOCKED" },
-              },
+        },
+        {
+          relationB: {
+            some: {
+              userAId: userId,
+              type: onlyBlocked
+                ? "BLOCKED"
+                : onlyFriends
+                ? "FRIEND"
+                : { not: "BLOCKED" },
             },
           },
-          {
-            relationA: { none: {} },
-            relationB: { none: {} },
-          },
-        ],
-      })),
+        },
+        onlyBlocked || onlyFriends
+          ? {}
+          : {
+              relationA: { none: {} },
+              relationB: { none: {} },
+            },
+      ],
+      id: { not: userId },
     },
     skip,
     take: 5,

@@ -8,6 +8,7 @@ const changeUserRelation = async (
   otherUserId: string,
   type?: RelationType
 ) => {
+  ///if no relationType provided then unfriend/unblock
   await db.relation.deleteMany({
     where: {
       OR: [
@@ -18,6 +19,16 @@ const changeUserRelation = async (
   });
   switch (type) {
     case "FRIEND":
+      //delete friend request
+      await db.friendRequest.deleteMany({
+        where: {
+          OR: [
+            { senderId: userId, receiverId: otherUserId },
+            { senderId: otherUserId, receiverId: userId },
+          ],
+        },
+      });
+      //create friend relation
       return await db.relation.create({
         data: {
           userAId: userId,
@@ -26,6 +37,15 @@ const changeUserRelation = async (
         },
       });
     case "BLOCKED":
+      //delete friend request
+      await db.friendRequest.deleteMany({
+        where: {
+          OR: [
+            { senderId: userId, receiverId: otherUserId },
+            { senderId: otherUserId, receiverId: userId },
+          ],
+        },
+      });
       return await db.relation.create({
         data: {
           userAId: userId,

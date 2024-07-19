@@ -4,6 +4,7 @@ import Post from "@/components/Post";
 import getPostByPostId from "@/actions/getPostByPostId";
 import getUserById from "@/lib/getUserById";
 import { auth } from "@/auth";
+import PostList from "@/components/PostList";
 
 const PostPage = async ({
   params: { postId },
@@ -26,7 +27,7 @@ const PostPage = async ({
     );
   return (
     <div className="w-full max-w-[40rem] px-4 mx-auto mt-3 space-y-4">
-      <Post post={post} user={user} />
+      <PostList user={user} initialPosts={[post]}></PostList>
     </div>
   );
 };

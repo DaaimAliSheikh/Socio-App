@@ -29,13 +29,13 @@ const ImageView = ({
     api.on("init", () => {
       api.scrollTo(currentIndex, true);
     });
-  }, [api]);
+  }, [api ,currentIndex]);
   return (
     <Carousel setApi={setApi} className=" w-[85%]  mx-auto">
       <CarouselContent>
         {imagePaths.map((path: string) => {
           return (
-            <CarouselItem className="w-full">
+            <CarouselItem key={path} className="w-full">
               <Image
                 alt="post image"
                 src={path}

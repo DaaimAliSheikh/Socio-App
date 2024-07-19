@@ -68,7 +68,6 @@ const Post = ({
   const textContainerRef = useRef<HTMLElement>(null);
   const [liked, setLiked] = useState(false);
   const { toast } = useToast();
-  const searchArray = splitStringToWords(search || "");
 
   useEffect(() => {
     if (textContainerRef.current) {
@@ -100,19 +99,23 @@ const Post = ({
     (async () => setLiked(await checkPostLiked(post.id, user.id)))();
 
     return () => window.removeEventListener("resize", handleResize);
-  }, []);
+  }, [post.id, user.id]);
   return (
     <Card className={`p-2 mb-4`}>
-      <div className="flex justify-between items-center">
+      <div className="flex justify-between   items-center">
         <div
-          className="flex  overflow-hidden hover:cursor-pointer"
+          className="flex  flex-grow overflow-hidden hover:cursor-pointer"
           onClick={() =>
             (window.location.href = `${window.location.origin}/profile/${post.author.id}`)
           }
         >
           <Avatar className=" m-2 h-10 w-10 border-1">
             <AvatarImage
-              src={"https://ik.imagekit.io/vmkz9ivsg4" + post.author.image}
+              src={
+                (post.author?.image?.startsWith("/socio")
+                  ? "https://ik.imagekit.io/vmkz9ivsg4"
+                  : "") + post.author?.image
+              }
             />
             <AvatarFallback>
               {generateInitials(post.author.name)}
@@ -120,16 +123,16 @@ const Post = ({
           </Avatar>
           <div
             className={
-              " ml-2 flex flex-col w-[70%] md:w-[80%]  justify-center  leading-6"
+              " ml-2 flex flex-col flex-grow  justify-center  overflow-hidden leading-6"
             }
           >
-            <div className="flex ">
+            <div className="flex w-full  ">
               <h2
                 className={
-                  "justify-center text-md font-bold overflow-hidden  text-ellipsis"
+                  "justify-center text-md font-bold overflow-hidden whitespace-nowrap  text-ellipsis"
                 }
               >
-                {post.author.name}
+                {post.author.name} 
               </h2>
               {post.edited ? (
                 <div className="text-muted-foreground flex items-center ml-2">
@@ -207,7 +210,7 @@ const Post = ({
                 <DialogHeader>
                   <DialogTitle>Edit Post</DialogTitle>
                 </DialogHeader>
-                <NewPostForm post={post} userId={user.id} setPosts={setPosts} />
+                <NewPostForm post={post} userId={user.id} setPosts={setPosts} setOpen={setEditopen} />
               </DialogContent>
             </Dialog>
           </>
@@ -230,15 +233,13 @@ const Post = ({
         ) : null}
 
         <p className="text-sm  ">
-          {!search
-            ? post.description
-            : splitStringToWords(post.description).map((w, index: number) => (
-                <span key={index}>
-                  <span className={searchArray.includes(w) ? "bg-primary" : ""}>
-                    {w}
-                  </span>{" "}
-                </span>
-              ))}
+          {splitStringToWords(post.description || "", search || "").map(
+            (w, index) => (
+              <span className={index == 1 ? "bg-primary" : ""} key={index}>
+                {w}
+              </span>
+            )
+          )}
         </p>
       </main>
       <main className="p-2">
@@ -293,7 +294,11 @@ const Post = ({
                 <div className="flex text-start overflow-hidden">
                   <Avatar className=" m-2 h-10 w-10 border-1">
                     <AvatarImage
-                      src={"https://ik.imagekit.io/vmkz9ivsg4" + user?.image}
+                      src={
+                        (post.author?.image?.startsWith("/socio")
+                          ? "https://ik.imagekit.io/vmkz9ivsg4"
+                          : "") + post.author?.image
+                      }
                     />
                     <AvatarFallback>
                       {generateInitials(post.author.name)}
@@ -306,7 +311,7 @@ const Post = ({
                   >
                     <h2
                       className={
-                        "justify-center text-sm font-bold overflow-hidden  text-ellipsis"
+                        "justify-center text-sm font-bold overflow-hidden whitespace-nowrap  text-ellipsis"
                       }
                     >
                       {post.author.name}
@@ -338,8 +343,18 @@ const Post = ({
 
                   try {
                     liked
-                      ? await changePostLikes(post.id, user.id, false)
-                      : await changePostLikes(post.id, user.id, true);
+                      ? await changePostLikes(
+                          post.id,
+                          user.id,
+                          post.author.id,
+                          false
+                        )
+                      : await changePostLikes(
+                          post.id,
+                          user.id,
+                          post.author.id,
+                          true
+                        );
                   } catch {
                     liked ? post.likes-- : post.likes++;
                     setLiked((prev) => !prev);

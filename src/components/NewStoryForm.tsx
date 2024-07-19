@@ -108,7 +108,7 @@ const NewStoryForm = ({ userId }: { userId: string }) => {
         >
           <input id="media" {...getInputProps()} />
           <p className="text-center">
-            Drag 'n' drop your file here, or click to upload
+            Drag and drop your file here, or click to upload
             <br />
             <span className="font-bold">(Max 1)</span>
           </p>

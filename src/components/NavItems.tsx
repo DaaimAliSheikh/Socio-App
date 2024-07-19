@@ -48,10 +48,10 @@ import {
 import { Button } from "./ui/button";
 
 import Link from "next/link";
-import { User } from "@prisma/client";
+import { RecentSearches, User } from "@prisma/client";
 import { logoutAction } from "@/actions/auth_actions";
 import LogoutButton from "./LogoutButton";
-import { redirect } from "next/navigation";
+import { redirect, usePathname } from "next/navigation";
 import generateInitials from "@/lib/generateInitials";
 import getNotifications from "@/actions/getNotifications";
 import { NotificationItem } from "@/lib/types";
@@ -63,20 +63,34 @@ import notifpic from "../../public/no-notifs-pic.svg";
 import NotificationDeleteButton from "./NotificationDeleteButton";
 import deleteNotification from "@/actions/deleteNotification";
 
-const NavItems = ({ user }: { user: User }) => {
+const NavItems = ({
+  user,
+  recentSearches,
+}: {
+  user: User;
+  recentSearches: RecentSearches[];
+}) => {
   const { theme, setTheme } = useTheme();
   const [searchOpen, setSearchOpen] = useState(false);
   const [refreshDisabled, setRefreshDisabled] = useState(false);
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
+  const path = usePathname();
+
+  const [inputValue, setInputValue] = useState("");
+
+  const handleSelect = (currentValue: string) => {
+    window.location.href = `/search?key=${currentValue}`;
+    setSearchOpen(false);
+  };
 
   const fetchNotifications = useCallback(async () => {
     const notifs = await getNotifications(user.id);
     setNotifications(notifs);
-  }, []);
+  }, [user.id]);
 
   useEffect(() => {
     fetchNotifications();
-  }, []);
+  }, [fetchNotifications]);
 
   return (
     <NavigationMenuList>
@@ -90,34 +104,65 @@ const NavItems = ({ user }: { user: User }) => {
         </NavigationMenuLink>
 
         <CommandDialog open={searchOpen} onOpenChange={setSearchOpen}>
-          <CommandInput placeholder="Search for People or Posts..." />
+          <CommandInput
+            value={inputValue}
+            onValueChange={(value) => {
+              setInputValue(value);
+            }}
+            placeholder="Search for People or Posts..."
+          />
           <CommandList>
             <CommandEmpty>No results found.</CommandEmpty>
-            <CommandGroup heading="Recent Searches">
-              <CommandItem>Search Emoji</CommandItem>
-              <CommandItem>Calculator</CommandItem>
-              <CommandItem>a</CommandItem>
+            {inputValue && (
+              <CommandGroup heading="Search results for:">
+                <CommandItem onSelect={() => handleSelect(inputValue)}>
+                &quot;{inputValue}&quot;
+                </CommandItem>
+              </CommandGroup>
+            )}
+            <CommandSeparator />
+
+            <CommandGroup heading="Recent searches">
+              {recentSearches?.map((recent) => (
+                <CommandItem
+                  key={recent.id}
+                  onSelect={() => handleSelect(recent.search)}
+                >
+                  <div className="flex">
+                    <RefreshCcw size={15} className="mr-2" />
+                    <p>{recent.search}</p>
+                  </div>
+                </CommandItem>
+              ))}
             </CommandGroup>
           </CommandList>
         </CommandDialog>
       </NavigationMenuItem>
 
       <NavigationMenuItem>
-        <Link href="/friends" legacyBehavior passHref>
-          <NavigationMenuLink className={navigationMenuTriggerStyle()}>
-            <Users className="text-primary mr-2 text-2xl" />
-            <p>Friends</p>
-          </NavigationMenuLink>
-        </Link>
+        <NavigationMenuLink
+          href="/friends"
+          className={
+            navigationMenuTriggerStyle() +
+            ` ${path === "/friends" ? "bg-secondary" : ""}`
+          }
+        >
+          <Users className="text-primary mr-2 text-2xl" />
+          <p>Friends</p>
+        </NavigationMenuLink>
       </NavigationMenuItem>
 
       <NavigationMenuItem>
-        <Link href="/" legacyBehavior passHref>
-          <NavigationMenuLink className={navigationMenuTriggerStyle()}>
-            <House className="text-primary mr-2 text-2xl" />
-            <p>Home</p>
-          </NavigationMenuLink>
-        </Link>
+        <NavigationMenuLink
+          href="/"
+          className={
+            navigationMenuTriggerStyle() +
+            ` ${path === "/" ? "bg-secondary" : ""}`
+          }
+        >
+          <House className="text-primary mr-2 text-2xl" />
+          <p>Home</p>
+        </NavigationMenuLink>
       </NavigationMenuItem>
 
       <NavigationMenuItem className="pr-4">
@@ -129,7 +174,7 @@ const NavItems = ({ user }: { user: User }) => {
             </Button>
           </DropdownMenuTrigger>
 
-          <DropdownMenuContent className=" w-[20em]">
+          <DropdownMenuContent className=" w-[30em]">
             <h2 className="text-md flex items-center px-2 justify-between">
               Notifications
               <Button
@@ -149,19 +194,21 @@ const NavItems = ({ user }: { user: User }) => {
                 )}
               </Button>
             </h2>
-            <ScrollArea className="h-72 mt-2 rounded-none border-none">
+            <ScrollArea className="h-72 mt-2  w-[30em]  rounded-none border-none">
               {notifications.length > 0 ? (
                 notifications.map((notif, index) => (
-                  <div
+                  <a
+                    href={`/post/${notif.post.id}`}
                     key={index}
-                    className="flex justify-between w-full p-2 rounded-md items-center hover:bg-secondary hover:cursor-pointer "
+                    className="flex w-[30em] p-2 my-1 border rounded-md items-center hover:bg-secondary hover:cursor-pointer "
                   >
-                    <div className="w-[20%] flex justify-center items-center">
+                    <div className="w-[12%]  flex justify-center items-center">
                       <Avatar>
                         <AvatarImage
                           src={
-                            "https://ik.imagekit.io/vmkz9ivsg4" +
-                            notif.associate.image
+                            (notif.associate?.image?.startsWith("/socio")
+                              ? "https://ik.imagekit.io/vmkz9ivsg4"
+                              : "") + notif.associate?.image
                           }
                         />
                         <AvatarFallback>
@@ -171,7 +218,7 @@ const NavItems = ({ user }: { user: User }) => {
                     </div>
                     <div
                       className={
-                        " flex flex-col w-[66%]  px-1  justify-center "
+                        " flex flex-col w-[75%]  px-1  justify-center "
                       }
                     >
                       <h2 className="whitespace-nowrap text-sm overflow-hidden text-ellipsis">
@@ -191,7 +238,7 @@ const NavItems = ({ user }: { user: User }) => {
                     >
                       <NotificationDeleteButton />
                     </form>
-                  </div>
+                  </a>
                 ))
               ) : (
                 <>
@@ -217,17 +264,21 @@ const NavItems = ({ user }: { user: User }) => {
           <DropdownMenuTrigger className="rounded-full">
             <Avatar className=" self-center">
               <AvatarImage
-                src={"https://ik.imagekit.io/vmkz9ivsg4" + user.image}
+                src={
+                  (user?.image?.startsWith("/socio")
+                    ? "https://ik.imagekit.io/vmkz9ivsg4"
+                    : "") + user?.image
+                }
               />
               <AvatarFallback>{generateInitials(user.name)}</AvatarFallback>
             </Avatar>
           </DropdownMenuTrigger>
           <DropdownMenuContent className="w-[15rem] py-2">
             <DropdownMenuItem>
-              <p>
-                <h2 className="text-1xl font-bold text-start">{user.name}</h2>
+              <a href={`/profile/${user.id}`}>
+                <h3 className="text-1xl font-bold text-start">{user.name}</h3>
                 <h3 className="text-sm text-muted-foreground">{user.email}</h3>
-              </p>
+              </a>
             </DropdownMenuItem>
 
             <DropdownMenuSeparator className="my-2" />
@@ -249,7 +300,7 @@ const NavItems = ({ user }: { user: User }) => {
               className="w-full  "
               action={async () => {
                 await logoutAction();
-                redirect("/signin");
+                window.location.href = "/signin";
               }}
             >
               <LogoutButton />

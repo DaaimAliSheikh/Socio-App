@@ -203,7 +203,7 @@ const EditProfileForm = ({ user }: { user: User }) => {
         >
           <input id="profileImage" {...getProfileInputProps()} />
           <p className="text-center">
-            Drag 'n' drop your file here, or click to upload a new profile image
+            Drag and drop your file here, or click to upload a new profile image
           </p>
         </div>
         <ul className="flex flex-wrap items-center gap-2 ">
@@ -253,7 +253,7 @@ const EditProfileForm = ({ user }: { user: User }) => {
         >
           <input id="coverImage" {...getCoverInputProps()} />
           <p className="text-center">
-            Drag 'n' drop your file here, or click to upload a new cover image
+            Drag and drop your file here, or click to upload a new cover image
           </p>
         </div>
         <ul className="flex flex-wrap items-center gap-2 ">

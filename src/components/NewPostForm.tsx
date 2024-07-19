@@ -30,10 +30,12 @@ const NewPostForm = ({
   userId,
   post,
   setPosts,
+  setOpen,
 }: {
   userId: string;
   post?: Post;
   setPosts?: React.Dispatch<React.SetStateAction<PostItem[]>>;
+  setOpen: React.Dispatch<React.SetStateAction<boolean>>;
 }) => {
   const {
     handleSubmit,
@@ -76,11 +78,13 @@ const NewPostForm = ({
         duration: 3000,
         description: result.success,
       });
-      if (setPosts)  ///if set post is not present then it means a new post is created from newpost component on the home page, hence we can do router.refresh as the initial posts for the Postlist component on the home page are coming from server component
+      if (setPosts)
+        ///if set post is not present then it means a new post is created from newpost component on the home page, hence we can do router.refresh as the initial posts for the Postlist component on the home page are coming from server component
         setPosts((prev: PostItem[]) =>
           prev.map((post) => (post.id === result.post?.id ? result.post : post))
         );
       else router.refresh();
+      setOpen(false);
     }
   };
 

@@ -32,23 +32,15 @@ const getPostsByUserId = async (
               },
             ],
           },
-          OR: splitStringToWords(search).map((word) => ({
-            description: {
-              contains: word,
-              mode: "insensitive",
-            },
-          })),
         },
         {
-          OR: splitStringToWords(search).map((word) => ({
-            description: {
-              contains: word,
-              mode: "insensitive",
-            },
-          })),
           authorId: userId,
         },
       ],
+      description: {
+        contains: search,
+        mode: "insensitive",
+      },
     },
 
     skip,

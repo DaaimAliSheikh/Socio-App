@@ -88,7 +88,7 @@ const Comment = ({
     window.addEventListener("resize", handleResize);
     (async () => setLiked(await checkCommentLiked(comment.id, user.id)))();
     return () => window.removeEventListener("resize", handleResize);
-  }, []);
+  }, [comment.id, user.id]);
 
   return (
     <div className="flex my-6 w-full gap-2  justify-between items-center">
@@ -97,7 +97,11 @@ const Comment = ({
       >
         <Avatar className=" mx-2  self-start h-8 w-8 border-1">
           <AvatarImage
-            src={"https://ik.imagekit.io/vmkz9ivsg4" + comment.author.image}
+            src={
+              (comment.author?.image?.startsWith("/socio")
+                ? "https://ik.imagekit.io/vmkz9ivsg4"
+                : "") + comment.author?.image
+            }
           />
           <AvatarFallback>
             {generateInitials(comment.author.name)}
@@ -108,7 +112,12 @@ const Comment = ({
             " ml-1 flex flex-col w-full  justify-center  overflow-hidden  leading-6"
           }
         >
-          <div onClick={() => window.location.href = `/profile/${comment.author.id}`} className="flex w-fit hover:cursor-pointer justify-between items-center gap-2">
+          <div
+            onClick={() =>
+              (window.location.href = `/profile/${comment.author.id}`)
+            }
+            className="flex w-fit hover:cursor-pointer justify-between items-center gap-2"
+          >
             <h2
               className={
                 "justify-center text-sm font-bold overflow-hidden  text-ellipsis"
@@ -151,8 +160,20 @@ const Comment = ({
 
                 try {
                   liked
-                    ? await changeCommentLikes(comment.id, user.id, false)
-                    : await changeCommentLikes(comment.id, user.id, true);
+                    ? await changeCommentLikes(
+                        comment.id,
+                        comment.postId,
+                        user.id,
+                        comment.author.id,
+                        false
+                      )
+                    : await changeCommentLikes(
+                        comment.id,
+                        comment.postId,
+                        user.id,
+                        comment.author.id,
+                        true
+                      );
                 } catch {
                   liked ? comment.likes-- : comment.likes++;
                   setLiked((prev) => !prev);
@@ -199,15 +220,22 @@ const Comment = ({
               )}
 
               <DropdownMenuItem
-                onClick={() => {
-                  deleteComment(comment.id);
-                  setComments((prev) =>
-                    prev.filter((c) => c.id !== comment.id)
-                  );
-                  toast({
-                    duration: 3000,
-                    description: "Comment deleted successfully",
-                  });
+                onClick={async () => {
+                  try {
+                    await deleteComment(comment.id);
+                    setComments((prev) =>
+                      prev.filter((c) => c.id !== comment.id)
+                    );
+                    toast({
+                      description: `${comment.author.name}'s comment has been deleted.`,
+                    });
+                  } catch {
+                    toast({
+                      title: "Error",
+                      variant: "destructive",
+                      description: `Action failed to complete.`,
+                    });
+                  }
                 }}
               >
                 Delete
@@ -245,7 +273,11 @@ const Comment = ({
                 <div className="flex  gap-x-3 items-center">
                   <Avatar className="h-8 w-8 self-start mt-1">
                     <AvatarImage
-                      src={"https://ik.imagekit.io/vmkz9ivsg4" + user?.image}
+                      src={
+                        (user?.image?.startsWith("/socio")
+                          ? "https://ik.imagekit.io/vmkz9ivsg4"
+                          : "") + user?.image
+                      }
                     />
                     <AvatarFallback>
                       {generateInitials(user?.name)}

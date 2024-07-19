@@ -22,16 +22,26 @@ const PostList = ({
   const [page, setPage] = useState(0);
   const [posts, setPosts] = useState<PostItem[]>(initialPosts);
   const [ended, setEnded] = useState(false);
+  const [noPosts, setNoPosts] = useState(false);
 
-  useEffect(() => setPosts(initialPosts), [initialPosts]);
+  useEffect(() => {
+    setPosts(initialPosts);
+    if (initialPosts?.length === 0) setNoPosts(true);
+    else setNoPosts(false);
+    if (initialPosts?.length < 5) {
+      setEnded(true);
+      return;
+    } else setEnded(false);
+  }, [initialPosts]);
+
+  useEffect(() => {
+    if (posts.length === 0) setNoPosts(true);
+  }, [posts]);
 
   useEffect(() => {
     (async () => {
       if (ended) return;
-      if (initialPosts?.length < 5) {
-        setEnded(true);
-        return;
-      }
+
       if (inView) {
         const newPosts = await getPostsByUserId(
           user.id,
@@ -45,26 +55,35 @@ const PostList = ({
         setPage((prev) => ++prev);
       }
     })();
-  }, [inView]);
+  }, [inView, ended, page, user.id, search]);
   return (
     <div className="w-full mx-auto max-w-[40rem] space-y-4">
-      {posts.length>0?posts?.map((post) => {
-        return (
-          <Post
-            key={post.id}
-            setPosts={setPosts}
-            post={post}
-            user={user}
-            search={search}
+      {!noPosts ? (
+        posts?.map((post) => {
+          return (
+            <Post
+              key={post.id}
+              setPosts={setPosts}
+              post={post}
+              user={user}
+              search={search}
+            />
+          );
+        })
+      ) : (
+        <>
+          <Image
+            alt="no posts"
+            width={300}
+            height={300}
+            className="mx-auto mt-10"
+            src={noPostSvg}
           />
-        );
-      }):
-      <>
-      
-      <Image alt="no posts" width={300} height={300} className="mx-auto mt-10" src={noPostSvg}/>
-      <p className="text-center text-muted-foreground text-lg">No posts found</p>
-      </>
-       }
+          <p className="text-center text-muted-foreground text-lg">
+            No posts found
+          </p>
+        </>
+      )}
       <div ref={ref}>
         <Loader2
           ref={ref}

@@ -1,7 +1,6 @@
 "use server";
 
 import { db } from "@/db/db";
-import { StoryItem } from "@/lib/types";
 
 const getStories = async (userId: string) => {
   const ownStory = await db.story.findUnique({
@@ -17,18 +16,20 @@ const getStories = async (userId: string) => {
   const othersStories = await db.story.findMany({
     where: {
       user: {
-        OR: [
-          {
-            relationA: {
-              some: { userBId: userId, type: "FRIEND" },
+       
+          OR: [
+            {
+              relationA: {
+                some: { userBId: userId, type: "FRIEND" },
+              },
             },
-          },
-          {
-            relationB: {
-              some: { userAId: userId, type: "FRIEND" },
+            {
+              relationB: {
+                some: { userAId: userId, type: "FRIEND" },
+              },
             },
-          },
-        ],
+          ],
+        
       },
     },
     include: {
@@ -36,14 +37,14 @@ const getStories = async (userId: string) => {
     },
   });
 
-  return [...othersStories, ownStory].filter(async (story) => {
-    if (!story) return false;
-    else if (story.expires > new Date()) return true;
-    else {
+  const allstories = ownStory ? [ownStory, ...othersStories] : othersStories;
+  for (const story of allstories) {
+    if (story.expires < new Date()) {
       await db.story.delete({ where: { id: story.id } });
-      return false;
+      allstories.splice(allstories.indexOf(story), 1);
     }
-  }) as StoryItem[];
+  }
+  return allstories;
 };
 
 export default getStories;
