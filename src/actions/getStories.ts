@@ -1,6 +1,7 @@
 "use server";
 
 import { db } from "@/db/db";
+import imagekit from "@/lib/imagekit";
 
 const getStories = async (userId: string) => {
   const ownStory = await db.story.findUnique({
@@ -16,20 +17,18 @@ const getStories = async (userId: string) => {
   const othersStories = await db.story.findMany({
     where: {
       user: {
-       
-          OR: [
-            {
-              relationA: {
-                some: { userBId: userId, type: "FRIEND" },
-              },
+        OR: [
+          {
+            relationA: {
+              some: { userBId: userId, type: "FRIEND" },
             },
-            {
-              relationB: {
-                some: { userAId: userId, type: "FRIEND" },
-              },
+          },
+          {
+            relationB: {
+              some: { userAId: userId, type: "FRIEND" },
             },
-          ],
-        
+          },
+        ],
       },
     },
     include: {
@@ -38,9 +37,15 @@ const getStories = async (userId: string) => {
   });
 
   const allstories = ownStory ? [ownStory, ...othersStories] : othersStories;
+  const files = await imagekit.listFiles({ path: "/socio/" });
   for (const story of allstories) {
     if (story.expires < new Date()) {
-      await db.story.delete({ where: { id: story.id } });
+      const s = await db.story.delete({ where: { id: story.id } });
+
+      const fileId = files.find((f) => {
+        return f.filePath === s.imagePath;
+      })?.fileId as string;
+      await imagekit.deleteFile(fileId);
       allstories.splice(allstories.indexOf(story), 1);
     }
   }
