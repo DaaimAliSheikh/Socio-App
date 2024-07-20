@@ -37,8 +37,8 @@ import Link from "next/link";
 import { useTheme } from "next-themes";
 import { logoutAction } from "@/actions/auth_actions";
 import LogoutButton from "./LogoutButton";
-import { redirect } from "next/navigation";
 import generateInitials from "@/lib/generateInitials";
+import addRecentSearch from "@/actions/addRecentSearch";
 
 const SideNav = ({
   user,
@@ -52,8 +52,9 @@ const SideNav = ({
   const [sheetOpen, setSheetOpen] = useState(false);
 
   const [inputValue, setInputValue] = useState("");
-  const handleSelect = (currentValue: string) => {
+  const handleSelect = async (currentValue: string) => {
     window.location.href = `/search?key=${currentValue}`;
+    await addRecentSearch(user.id, currentValue);
     setSearchOpen(false);
     setSheetOpen(false);
   };
@@ -133,7 +134,7 @@ const SideNav = ({
                     {inputValue && (
                       <CommandGroup heading="Search results for:">
                         <CommandItem onSelect={() => handleSelect(inputValue)}>
-                        &quot;{inputValue}&quot;
+                          &quot;{inputValue}&quot;
                         </CommandItem>
                       </CommandGroup>
                     )}

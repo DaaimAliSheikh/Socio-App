@@ -62,6 +62,7 @@ import Image from "next/image";
 import notifpic from "../../public/no-notifs-pic.svg";
 import NotificationDeleteButton from "./NotificationDeleteButton";
 import deleteNotification from "@/actions/deleteNotification";
+import addRecentSearch from "@/actions/addRecentSearch";
 
 const NavItems = ({
   user,
@@ -78,8 +79,9 @@ const NavItems = ({
 
   const [inputValue, setInputValue] = useState("");
 
-  const handleSelect = (currentValue: string) => {
+  const handleSelect = async (currentValue: string) => {
     window.location.href = `/search?key=${currentValue}`;
+    await addRecentSearch(user.id, currentValue);
     setSearchOpen(false);
   };
 
@@ -116,7 +118,7 @@ const NavItems = ({
             {inputValue && (
               <CommandGroup heading="Search results for:">
                 <CommandItem onSelect={() => handleSelect(inputValue)}>
-                &quot;{inputValue}&quot;
+                  &quot;{inputValue}&quot;
                 </CommandItem>
               </CommandGroup>
             )}

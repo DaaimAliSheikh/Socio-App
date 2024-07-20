@@ -175,5 +175,6 @@ model RecentSearches {
   id     String @id @default(cuid())
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId String
-  search String @unique
+  search String 
+  @@unique([userId,search])
 }
