@@ -129,7 +129,7 @@ const UsersList = ({
               className="flex  w-full items-center  hover:bg-secondary hover:cursor-pointer "
               onClick={() => (window.location.href = `/profile/${person.id}`)}
             >
-              <div className="flex sm:w-[13%]  overflow-hidden w-[17%]">
+              <div className="flex md:w-[13%]  overflow-hidden w-[25%]">
                 <Avatar className=" m-2 md:h-14 md:w-14 h-10 w-10 border-2">
                   <AvatarImage
                     src={"https://ik.imagekit.io/vmkz9ivsg4" + person?.image}

@@ -41,7 +41,7 @@ const NotificationsPage = async () => {
                 key={index}
                 className="flex  w-full items-center hover:bg-secondary hover:cursor-pointer "
               >
-                <div className="w-[15%] md:w-[10%]  flex justify-center items-center">
+                <div className="w-[20%] md:w-[10%]  flex justify-center items-center">
                   <Avatar>
                     <AvatarImage
                       src={
@@ -69,7 +69,7 @@ const NotificationsPage = async () => {
                 </a>
 
                 <form
-                  className=" mx-2 my-4  justify-end flex-grow w-[7%] flex  items-center"
+                  className=" mx-2 my-4  justify-end flex-grow   flex  items-center"
                   action={deleteNotification.bind(null, notif.id)}
                 >
                   <NotificationDeleteButton />

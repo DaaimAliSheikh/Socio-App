@@ -18,13 +18,13 @@ const Navbar = async () => {
 
   return (
     <nav
-      className={`container fixed top-0 py-3  bg-opacity-50 backdrop-blur-md z-10 flex ${
+      className={`container px-1 fixed justify-between top-0  py-3  bg-opacity-50 backdrop-blur-md z-10 flex ${
         user ? "justify-between" : "justify-center"
       }`}
     >
       {/*logo*/}
 
-      <a className="font-bold self-center  text-4xl" href={"/"}>
+      <a className="font-bold self-center pl-1 text-4xl" href={"/"}>
         <h1 className=" bg-gradient-to-r from-rose-600 to-fuchsia-400 bg-clip-text text-transparent ">
           SOCIO
         </h1>
@@ -32,7 +32,7 @@ const Navbar = async () => {
 
       {/*navigation links */}
       {user ? (
-        <Card className="border-none shadow-none bg-transparent">
+        <Card className=" shadow-none border-none bg-transparent">
           <NavigationMenu className={user ? "md:block hidden" : " hidden"}>
             <NavItems user={user} recentSearches={recentSearches} />
           </NavigationMenu>

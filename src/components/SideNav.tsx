@@ -66,7 +66,7 @@ const SideNav = ({
         </Button>
       </SheetTrigger>
 
-      <SheetContent className="w-[70vw]" side={"left"}>
+      <SheetContent className="w-[100vw]" side={"left"}>
         <Card className="border-none shadow-none bg-transparent">
           <SheetHeader className="mt-2">
             <a href={`/profile/${user.id}`}>

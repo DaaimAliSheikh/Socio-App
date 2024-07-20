@@ -103,7 +103,7 @@ const ProfilePage = async ({
   });
 
   return (
-    <div className="flex-grow flex flex-col  max-w-[40rem] mx-auto w-[90%] mt-2 ">
+    <div className="flex-grow flex flex-col  max-w-[40rem] mx-auto w-[95%] mt-2 ">
       <Card className="w-full flex flex-col ">
         <div className="relative">
           <Dialog>
@@ -142,7 +142,7 @@ const ProfilePage = async ({
           <Dialog>
             <DialogTrigger asChild>
               <Avatar
-                className={`absolute hover:cursor-pointer top-2/3   left-1/2 -translate-y-[60%] -translate-x-1/2  h-28 w-28 border-4 ${"md:-translate-y-[40%]"}`}
+                className={`absolute hover:cursor-pointer top-[61%] md:top-[70%]  left-1/2 -translate-y-[60%] -translate-x-1/2  md:h-28 md:w-28 h-22 w-22 border-4 ${"md:-translate-y-[40%]"}`}
               >
                 <AvatarImage
                   src={
@@ -171,8 +171,8 @@ const ProfilePage = async ({
             </DialogContent>
           </Dialog>
 
-          <div className="flex  flex-col gap-2 items-center leading-2 pt-8">
-            <div className="flex  justify-center mt-2 md:mt-0 ">
+          <div className="flex   flex-col gap-2 items-center leading-2 pt-8">
+            <div className="flex  justify-center  mt-10 md:mt-0 ">
               <h3
                 className={` text-2xl w-[65%] text-center text-ellipsis overflow-hidden whitespace-nowrap  ${
                   user.id === currentUser.id ? "ml-12" : ""

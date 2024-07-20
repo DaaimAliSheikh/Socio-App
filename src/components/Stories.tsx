@@ -35,8 +35,8 @@ import Image from "next/image";
 const Stories = ({ user, stories }: { user: User; stories: StoryItem[] }) => {
   return (
     <>
-      <Card className=" w-full mb-4 shadow-sm py-2 border rounded-lg">
-        <Carousel className="w-[82%]  mx-auto">
+      <Card className=" w-full mb-4 shadow-sm py-1 border-none rounded-lg">
+        <Carousel className="md:w-[82%] w-full px-1   mx-auto">
           <CarouselContent>
             {/* add story */}
             {stories[0]?.user.id === user.id || (
@@ -45,7 +45,7 @@ const Stories = ({ user, stories }: { user: User; stories: StoryItem[] }) => {
                   <CarouselItem className=" pr-1 basis-1/3  md:basis-1/5 h-[10rem]  active:cursor-grabbing hover:cursor-grab">
                     <div className="h-full relative overflow-hidden rounded-lg hover:border-foreground border-2 ">
                       <div className="h-1/2 ">
-                        <Avatar className="absolute h-20 w-20 top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2">
+                        <Avatar className="absolute md:h-20 md:w-20 h-16 w-16 top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2">
                           <AvatarImage
                             src={
                               (user?.image?.startsWith("/socio")

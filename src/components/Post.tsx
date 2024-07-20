@@ -132,7 +132,7 @@ const Post = ({
                   "justify-center text-md font-bold overflow-hidden whitespace-nowrap  text-ellipsis"
                 }
               >
-                {post.author.name} 
+                {post.author.name}
               </h2>
               {post.edited ? (
                 <div className="text-muted-foreground flex items-center ml-2">
@@ -187,6 +187,7 @@ const Post = ({
                       toast({
                         description: "Post deleted successfully",
                       });
+                      setPosts((prev) => prev.filter((p) => p.id != post.id));
                     } catch {
                       toast({
                         title: "Error",
@@ -197,7 +198,6 @@ const Post = ({
                     }
 
                     setIsDeleting(false);
-                    setPosts((prev) => prev.filter((p) => p.id != post.id));
                   }}
                 >
                   Delete
@@ -210,7 +210,12 @@ const Post = ({
                 <DialogHeader>
                   <DialogTitle>Edit Post</DialogTitle>
                 </DialogHeader>
-                <NewPostForm post={post} userId={user.id} setPosts={setPosts} setOpen={setEditopen} />
+                <NewPostForm
+                  post={post}
+                  userId={user.id}
+                  setPosts={setPosts}
+                  setOpen={setEditopen}
+                />
               </DialogContent>
             </Dialog>
           </>
@@ -248,7 +253,7 @@ const Post = ({
             post.imagePaths.length >= 3
               ? "grid-cols-2 "
               : post.imagePaths.length == 2
-              ? "grid-cols-1 grid-rows-2"
+              ? "grid-cols-2 grid-rows-1"
               : ""
           }`}
         >
