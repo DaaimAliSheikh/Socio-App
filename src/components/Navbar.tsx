@@ -18,7 +18,7 @@ const Navbar = async () => {
 
   return (
     <nav
-      className={`container px-1 fixed  top-0  py-3  bg-opacity-50 backdrop-blur-md z-10 flex ${
+      className={`container px-1 fixed  top-0  py-3 md:px-8 bg-opacity-50 backdrop-blur-md z-10 flex ${
         user ? "justify-between" : "justify-center"
       }`}
     >
