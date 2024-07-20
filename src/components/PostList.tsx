@@ -74,8 +74,8 @@ const PostList = ({
         <>
           <Image
             alt="no posts"
-            width={300}
-            height={300}
+            height={100}
+            width={100}
             className="mx-auto mt-10"
             src={noPostSvg}
           />

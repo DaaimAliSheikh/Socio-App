@@ -6,11 +6,23 @@ import { User } from "@prisma/client";
 
 import UsersList from "./UsersList";
 
-const FriendsPageResults = ({ user }: { user: User }) => {
+const FriendsPageResults = ({
+  user,
+  suggestedUsers,
+  fullHeight,
+}: {
+  user: User;
+  suggestedUsers: User[];
+  fullHeight: boolean;
+}) => {
   const [value, setValue] = useState<string>("friends");
 
   return (
-    <main className="flex p-2 border-none shadow-none items-start flex-col border w-[90%] mx-auto  max-w-[50rem]">
+    <main
+      className={` ${
+        fullHeight ? "" : "h-[65vh] "
+      }  flex shadow-none items-start flex-col  w-[90%] mx-auto  max-w-[50rem]`}
+    >
       <h1 className="text-1xl text-muted-foreground font-bold my-2">
         {value === "friends"
           ? "Your friends"
@@ -22,7 +34,7 @@ const FriendsPageResults = ({ user }: { user: User }) => {
         value={value}
         onValueChange={setValue}
         defaultValue="friends"
-        className="w-full  "
+        className="w-full   overflow-auto h-full"
       >
         <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="friends">Friends</TabsTrigger>
@@ -30,7 +42,7 @@ const FriendsPageResults = ({ user }: { user: User }) => {
           <TabsTrigger value="blocked">Blocked</TabsTrigger>
         </TabsList>
         <TabsContent
-          className="w-full mx-auto mt-4 max-w-[40rem] space-y-4"
+          className="w-full mx-auto mt-2 max-w-[40rem] space-y-4"
           value="friends"
         >
           <UsersList user={user} onlyFriends={true} />

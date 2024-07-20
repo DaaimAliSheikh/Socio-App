@@ -66,8 +66,8 @@ const UsersList = ({
   const [page, setPage] = useState(0);
   const [pending, setPending] = useState(false);
   const [blockpending, setBlockpending] = useState(false);
-  const { ref, inView } = useInView();
   const { toast } = useToast();
+  const { ref, inView } = useInView();
   const [noUsers, setNoUsers] = useState(false);
 
   const [ended, setEnded] = useState(false);
@@ -113,12 +113,12 @@ const UsersList = ({
               <div key={index}>
                 <Image
                   alt="no people found"
-                  height={200}
-                  width={200}
+                  height={100}
+                  width={100}
                   className="mx-auto mt-10"
                   src={noPeopleSvg}
                 />
-                <p className="text-center text-muted-foreground text-lg">
+                <p className="text-center text-muted-foreground mt-4 text-lg">
                   No people found
                 </p>
               </div>
@@ -454,12 +454,12 @@ const UsersList = ({
         <>
           <Image
             alt="no people found"
-            height={200}
-            width={200}
+            height={100}
+            width={100}
             className="mx-auto mt-10"
             src={noPeopleSvg}
           />
-          <p className="text-center text-muted-foreground text-lg">
+          <p className="text-center text-muted-foreground  text-lg">
             No people found
           </p>
         </>

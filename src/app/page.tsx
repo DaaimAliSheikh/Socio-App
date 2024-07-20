@@ -10,6 +10,9 @@ import noPostsSvg from "../../public/no-posts.svg";
 import Image from "next/image";
 import { PostItem } from "@/lib/types";
 
+export const dynamic = "force-dynamic";
+export const fetchCache = "force-no-store";
+
 const HomePage = async () => {
   const session = await auth();
   const user = await getUserById(session?.user?.id);

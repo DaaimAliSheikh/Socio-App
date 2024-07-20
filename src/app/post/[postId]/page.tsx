@@ -1,10 +1,12 @@
 import noPostsSvg from "../../../../public/no-posts.svg";
 import Image from "next/image";
-import Post from "@/components/Post";
 import getPostByPostId from "@/actions/getPostByPostId";
 import getUserById from "@/lib/getUserById";
 import { auth } from "@/auth";
 import PostList from "@/components/PostList";
+
+export const dynamic = "force-dynamic";
+export const fetchCache = "force-no-store";
 
 const PostPage = async ({
   params: { postId },

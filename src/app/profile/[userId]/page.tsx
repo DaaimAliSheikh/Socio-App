@@ -30,8 +30,21 @@ import { db } from "@/db/db";
 import { PostItem } from "@/lib/types";
 import generateInitials from "@/lib/generateInitials";
 import { auth } from "@/auth";
+import ProfileRelationButtons from "@/components/ProfileRelationButtons";
+import getUserRelation from "@/actions/getUserRelation";
+import getFriendRequest from "@/actions/getFriendRequest";
+import { User } from "@prisma/client";
+import noUserSvg from "./../../../../public/user-not-found.svg";
 
 export const dynamic = "force-dynamic";
+export const fetchCache = "force-no-store";
+
+
+interface UserWithRelation extends User {
+  relation?: string;
+  friendRequestSent?: boolean;
+  friendRequestReceived?: boolean;
+}
 
 const ProfilePage = async ({
   params: { userId },
@@ -41,8 +54,41 @@ const ProfilePage = async ({
   const session = await auth();
   const currentUser = await getUserById(session?.user?.id);
   const user = await getUserById(userId);
+
   if (!user || !currentUser) return null;
 
+  ///redirect
+  if ((await getUserRelation(user.id, currentUser.id)) === "BLOCKED" || !user)
+    return (
+      <>
+        <Image
+          className="mt-20 mx-auto"
+          src={noUserSvg}
+          alt="no user"
+          width={200}
+          height={200}
+        />
+        <p className="text-center text-muted-foreground text-md p-4">
+          User not found
+        </p>
+      </>
+    );
+
+  const modifiedUser: UserWithRelation = user;
+
+  modifiedUser.relation = await getUserRelation(
+    modifiedUser.id,
+    currentUser.id
+  );
+  modifiedUser.friendRequestSent = !!(await getFriendRequest(
+    currentUser.id,
+    modifiedUser.id,
+    true
+  ));
+  modifiedUser.friendRequestReceived = !!(await getFriendRequest(
+    currentUser.id,
+    modifiedUser.id
+  ));
   const posts: PostItem[] = await db.post.findMany({
     where: {
       authorId: userId,
@@ -172,9 +218,15 @@ const ProfilePage = async ({
             </h5>
           </div>
         </div>
-        <p className="pb-6 pt-4 px-10 text-sm text-muted-foreground leading-5 text-center">
+        <p className="pb-6 pt-4  px-10 text-sm text-muted-foreground leading-5 text-center">
           {user.bio}
         </p>
+        {currentUser.id === user.id || (
+          <ProfileRelationButtons
+            modifiedUser={modifiedUser}
+            currentUser={currentUser}
+          />
+        )}
       </Card>
       <h2 className="text-lg text-start text-muted-foreground font-bold mt-4 mb-2">
         {user.id === currentUser.id ? "Your" : `${user.name}'s`} posts
