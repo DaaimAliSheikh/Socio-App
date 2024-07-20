@@ -40,8 +40,8 @@ const updatePost = async (data: FormData, postId: string) => {
       });
 
       try {
+        const files = await imagekit.listFiles({ path: "/socio/" });
         const deletePromises = post?.imagePaths.map(async (path) => {
-          const files = await imagekit.listFiles({ path: "/socio/" });
           const fileId = files.find((f) => {
             return f.filePath === path;
           })?.fileId as string;
