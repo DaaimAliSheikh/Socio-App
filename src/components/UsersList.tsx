@@ -68,14 +68,8 @@ const UsersList = ({
   const [blockpending, setBlockpending] = useState(false);
   const { toast } = useToast();
   const { ref, inView } = useInView();
-  const [noUsers, setNoUsers] = useState(false);
 
   const [ended, setEnded] = useState(false);
-
-  useEffect(() => {
-    if (users.length === 0) setNoUsers(true);
-    else setNoUsers(false);
-  }, [users]);
 
   useEffect(() => {
     (async () => {
@@ -85,16 +79,25 @@ const UsersList = ({
         let newUsers: UserWithRelation[] = await getUsersBySearchTerm(
           user.id,
           page * 5,
-          onlyBlocked || onlyFriends ? "" : searchParams.get("key") || "",
+          onlyBlocked || onlyFriends || onlyRequests
+            ? ""
+            : searchParams.get("key") || "",
           onlyBlocked,
-          onlyFriends
+          onlyFriends,
+          onlyRequests
         );
-        if (newUsers.length === 0) setNoUsers(true);
 
         for (const u of newUsers) {
-          u.relation = await getUserRelation(u.id, user.id);
-          u.friendRequestSent = !!(await getFriendRequest(user.id, u.id, true));
-          u.friendRequestReceived = !!(await getFriendRequest(user.id, u.id));
+          u.relation = onlyFriends
+            ? "FRIEND"
+            : await getUserRelation(u.id, user.id);
+          u.friendRequestSent =
+            onlyBlocked || onlyFriends || onlyRequests
+              ? false
+              : !!(await getFriendRequest(user.id, u.id, true));
+          u.friendRequestReceived = onlyRequests
+            ? true
+            : !!(await getFriendRequest(user.id, u.id));
         }
 
         if (newUsers.length < 5) setEnded(true);
@@ -106,33 +109,35 @@ const UsersList = ({
   }, [inView, ended, onlyBlocked, onlyFriends, page, searchParams, user.id]);
   return (
     <div className="w-full mx-auto max-w-[40rem] space-y-4">
-      {!noUsers ? (
+      {users.length === 0 && ended === true ? (
+        <>
+          <Image
+            alt="no people found"
+            height={100}
+            width={100}
+            className="mx-auto mt-10"
+            src={noPeopleSvg}
+          />
+          <p className="text-center text-muted-foreground  text-lg">
+            No people found
+          </p>
+        </>
+      ) : (
         users.map((person: UserWithRelation, index: number) => {
-          if (onlyRequests && !person.friendRequestReceived)
-            return (
-              <div key={index}>
-                <Image
-                  alt="no people found"
-                  height={100}
-                  width={100}
-                  className="mx-auto mt-10"
-                  src={noPeopleSvg}
-                />
-                <p className="text-center text-muted-foreground mt-4 text-lg">
-                  No people found
-                </p>
-              </div>
-            );
           return (
             <Card
               key={index}
               className="flex  w-full items-center  hover:bg-secondary hover:cursor-pointer "
               onClick={() => (window.location.href = `/profile/${person.id}`)}
             >
-              <div className="flex md:w-[13%]  overflow-hidden w-[25%]">
+              <div className="flex md:w-[13%]  overflow-hidden w-[24%]">
                 <Avatar className=" m-2 md:h-14 md:w-14 h-10 w-10 border-2">
                   <AvatarImage
-                    src={"https://ik.imagekit.io/vmkz9ivsg4" + person?.image}
+                    src={
+                      (person?.image?.startsWith("/socio")
+                        ? "https://ik.imagekit.io/vmkz9ivsg4"
+                        : "") + person?.image
+                    }
                   />
                   <AvatarFallback>
                     {generateInitials(person?.name)}
@@ -146,7 +151,7 @@ const UsersList = ({
               >
                 <h2
                   className={
-                    " text-md font-bold overflow-hidden whitespace-nowrap text-ellipsis"
+                    " md:text-md text-sm font-bold overflow-hidden whitespace-nowrap text-ellipsis"
                   }
                 >
                   {splitStringToWords(
@@ -450,19 +455,6 @@ const UsersList = ({
             </Card>
           );
         })
-      ) : (
-        <>
-          <Image
-            alt="no people found"
-            height={100}
-            width={100}
-            className="mx-auto mt-10"
-            src={noPeopleSvg}
-          />
-          <p className="text-center text-muted-foreground  text-lg">
-            No people found
-          </p>
-        </>
       )}
       <div ref={ref}>
         <Loader2

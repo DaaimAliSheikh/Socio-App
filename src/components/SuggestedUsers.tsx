@@ -23,7 +23,7 @@ const SuggestedUsers = ({ users }: { users: User[] }) => {
                 />
                 <AvatarFallback>{generateInitials(user.name)}</AvatarFallback>
               </Avatar>
-              <p className="text-sm text-center p-1 overflow-hidden whitespace-nowrap text-ellipsis">
+              <p className="md:text-sm text-xs text-center p-1 overflow-hidden whitespace-nowrap text-ellipsis">
                 {user.name}
               </p>
             </a>

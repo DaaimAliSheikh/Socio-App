@@ -7,8 +7,23 @@ const getUsersBySearchTerm = async (
   skip: number = 0,
   search: string = "",
   onlyBlocked?: boolean,
-  onlyFriends?: boolean
+  onlyFriends?: boolean,
+  onlyRequests?: boolean
 ) => {
+  if (onlyRequests) {
+    const requests = await db.friendRequest.findMany({
+      where: {
+        receiverId: userId,
+      },
+      select: { sender: true },
+      skip,
+      take: 5,
+
+      orderBy: { sender: { name: "asc" } },
+    });
+    return requests.map((req) => req.sender);
+  }
+
   return await db.user.findMany({
     where: {
       name: {
@@ -25,7 +40,7 @@ const getUsersBySearchTerm = async (
                 ? "BLOCKED"
                 : onlyFriends
                 ? "FRIEND"
-                : { not: "BLOCKED" },
+                : { not: "BLOCKED" }, ///for simple search
             },
           },
         },

@@ -39,7 +39,6 @@ import noUserSvg from "./../../../../public/user-not-found.svg";
 export const dynamic = "force-dynamic";
 export const fetchCache = "force-no-store";
 
-
 interface UserWithRelation extends User {
   relation?: string;
   friendRequestSent?: boolean;
@@ -142,7 +141,11 @@ const ProfilePage = async ({
           <Dialog>
             <DialogTrigger asChild>
               <Avatar
-                className={`absolute hover:cursor-pointer top-[61%] md:top-[70%]  left-1/2 -translate-y-[60%] -translate-x-1/2  md:h-28 md:w-28 h-22 w-22 border-4 ${"md:-translate-y-[40%]"}`}
+                className={`absolute hover:cursor-pointer ${
+                  user.id === currentUser.id
+                    ? "top-[56%] md:top-[60%]"
+                    : "top-[65%] "
+                } left-1/2 -translate-y-[60%] -translate-x-1/2  md:h-28 md:w-28 h-20 w-20 border-4 ${"md:-translate-y-[40%]"}`}
               >
                 <AvatarImage
                   src={
@@ -151,7 +154,7 @@ const ProfilePage = async ({
                       : "") + user?.image
                   }
                 />
-                <AvatarFallback className="text-4xl">
+                <AvatarFallback className="md:text-4xl text-2xl">
                   {generateInitials(user.name)}
                 </AvatarFallback>
               </Avatar>
@@ -171,49 +174,46 @@ const ProfilePage = async ({
             </DialogContent>
           </Dialog>
 
-          <div className="flex   flex-col gap-2 items-center leading-2 pt-8">
-            <div className="flex  justify-center  mt-10 md:mt-0 ">
-              <h3
-                className={` text-2xl w-[65%] text-center text-ellipsis overflow-hidden whitespace-nowrap  ${
-                  user.id === currentUser.id ? "ml-12" : ""
-                }`}
-              >
-                {user.name}
-              </h3>
-              {user.id == currentUser.id && (
-                <Dialog>
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <DialogTrigger asChild>
-                          <Button
-                            variant={"ghost"}
-                            size={"icon"}
-                            className="h-8 w-8 mr-4 px-2 py-1 flex gap-2 ml-2"
-                          >
-                            <Pencil
-                              className="text-muted-foreground "
-                              size={18}
-                            />
-                          </Button>
-                        </DialogTrigger>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>Edit Profile</p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
+          <div className="flex   flex-col gap-2 items-center leading-2 pt-10">
+            <h3
+              className={` w-full md:text-4xl text-lg text-center text-ellipsis overflow-hidden whitespace-nowrap `}
+            >
+              {user.name}
+            </h3>
+            {user.id == currentUser.id && (
+              <Dialog>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <DialogTrigger asChild>
+                        <Button
+                          variant={"outline"}
+                          size={"sm"}
+                          className="flex gap-2 text-xs md:text-sm"
+                        >
+                          Edit Profile
+                          <Pencil
+                            className="text-muted-foreground "
+                            size={16}
+                          />
+                        </Button>
+                      </DialogTrigger>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Edit Profile</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
 
-                  <DialogContent>
-                    <DialogHeader>
-                      <DialogTitle>Edit Profile</DialogTitle>
-                    </DialogHeader>
-                    <EditProfileForm user={currentUser} />
-                  </DialogContent>
-                </Dialog>
-              )}
-            </div>
-            <h5 className="text-sm bg-background py-1 px-2 rounded-lg hover:underline">
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Edit Profile</DialogTitle>
+                  </DialogHeader>
+                  <EditProfileForm user={currentUser} />
+                </DialogContent>
+              </Dialog>
+            )}
+            <h5 className="text-xs md:text-sm bg-background py-1 px-2 rounded-lg hover:underline">
               {user.email}
             </h5>
           </div>

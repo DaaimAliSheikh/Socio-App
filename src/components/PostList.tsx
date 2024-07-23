@@ -22,21 +22,14 @@ const PostList = ({
   const [page, setPage] = useState(0);
   const [posts, setPosts] = useState<PostItem[]>(initialPosts);
   const [ended, setEnded] = useState(false);
-  const [noPosts, setNoPosts] = useState(false);
 
   useEffect(() => {
     setPosts(initialPosts);
-    if (initialPosts?.length === 0) setNoPosts(true);
-    else setNoPosts(false);
     if (initialPosts?.length < 5) {
       setEnded(true);
       return;
     } else setEnded(false);
   }, [initialPosts]);
-
-  useEffect(() => {
-    if (posts.length === 0) setNoPosts(true);
-  }, [posts]);
 
   useEffect(() => {
     (async () => {
@@ -58,19 +51,7 @@ const PostList = ({
   }, [inView, ended, page, user.id, search]);
   return (
     <div className="w-full mx-auto max-w-[40rem] space-y-4">
-      {!noPosts ? (
-        posts?.map((post) => {
-          return (
-            <Post
-              key={post.id}
-              setPosts={setPosts}
-              post={post}
-              user={user}
-              search={search}
-            />
-          );
-        })
-      ) : (
+      {posts.length === 0 && ended === true ? (
         <>
           <Image
             alt="no posts"
@@ -83,6 +64,18 @@ const PostList = ({
             No posts found
           </p>
         </>
+      ) : (
+        posts?.map((post) => {
+          return (
+            <Post
+              key={post.id}
+              setPosts={setPosts}
+              post={post}
+              user={user}
+              search={search}
+            />
+          );
+        })
       )}
       <div ref={ref}>
         <Loader2

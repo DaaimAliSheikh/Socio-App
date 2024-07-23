@@ -2,7 +2,9 @@ export default function splitStringToWords(
   sample: string,
   substring: string
 ): string[] {
-  const index = sample.indexOf(substring);
+  const lowerSubString = substring.toLowerCase();
+  const lowerSample = sample.toLowerCase();
+  const index = lowerSample.indexOf(lowerSubString);
 
   if (index === -1) {
     // If substring is not found, return whole sample string and empty strings
